@@ -12,3 +12,5 @@ export const authClient = createAuthClient({
 export const { signIn, signUp, signOut, useSession } = authClient;
 
 // Test Cloudflare automatic deployment
+
+// Test Cloudflare automatic deployment round 2
