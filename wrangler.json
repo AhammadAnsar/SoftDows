@@ -9,8 +9,9 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "softdows-local",
-      "database_id": "local-only-placeholder"
+      "database_name": "softdows-production",
+      "database_id": "67cb2d2e-dcd8-45dc-9f9b-83426f5341f8"
     }
   ]
 }
+
