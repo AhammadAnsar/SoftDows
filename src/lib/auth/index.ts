@@ -10,6 +10,8 @@ export function getAuth(env: any) {
   const db = getDb(env.DB);
   
   return betterAuth({
+    secret: env.BETTER_AUTH_SECRET,
+    baseURL: env.BETTER_AUTH_URL,
     database: drizzleAdapter(db, {
       provider: 'sqlite',
       schema: {
@@ -38,3 +40,4 @@ export function getAuth(env: any) {
     }
   });
 }
+

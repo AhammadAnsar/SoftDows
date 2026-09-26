@@ -1,7 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { handleServerError } from './lib/errors';
 import { getAuth } from './lib/auth';
-// According to Astro v6 Cloudflare adapter:
 import { env } from 'cloudflare:workers';
 
 /**

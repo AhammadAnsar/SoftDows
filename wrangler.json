@@ -20,5 +20,8 @@
                               "binding":  "SESSION",
                               "id":  "9001da5361824a3b8abe24cadc2dc344"
                           }
-                      ]
+                      ],
+    "vars":  {
+                 "BETTER_AUTH_URL":  "https://softdows.ansarahammad369.workers.dev"
+             }
 }

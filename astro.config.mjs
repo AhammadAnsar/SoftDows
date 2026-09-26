@@ -9,9 +9,10 @@ export default defineConfig({
     '/products/web-hosting/': '/services/managed-web-hosting/'
   },
   site: 'https://softdows.com',
+  output: 'server',
   adapter: cloudflare({
     imageService: 'cloudflare',
-    platformProxy: {
+        platformProxy: {
       enabled: true
     }
   }),
