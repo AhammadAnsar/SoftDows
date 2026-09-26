@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const hasPermission = requirePermission(user.role as any, 'settings', 'update');
+    const hasPermission = requirePermission(user.role as any, 'content', 'update');
     if (!hasPermission) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
     }

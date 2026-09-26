@@ -17,9 +17,11 @@ const footerNav = dbFooterNav || fallbackFooterNav;
 
 const contactConfig = {
   address: dbSettings['contact_address'] || fallbackContactConfig.address,
-  phone: dbSettings['contact_phone'] || fallbackContactConfig.phone,
+  phonePrimary: dbSettings['contact_phone'] || fallbackContactConfig.phonePrimary,
+  phoneSecondary: fallbackContactConfig.phoneSecondary,
+  whatsapp: fallbackContactConfig.whatsapp,
   email: dbSettings['contact_email'] || fallbackContactConfig.email,
-  social: fallbackContactConfig.social // Social could be merged too
+  socials: fallbackContactConfig.socials
 };
 
 const copyrightText = dbSettings['footer_copyright'] || `© ${new Date().getFullYear()} SoftDows. All rights reserved.`;

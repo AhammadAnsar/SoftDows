@@ -20,7 +20,7 @@ const currentPath = Astro.url.pathname;
 
     <!-- Desktop Nav -->
     <nav class="hidden md:flex items-center gap-6 lg:gap-8" aria-label="Main Navigation">
-      {mainNav.map(item => {
+      {mainNav.map((item: import('../../config/navigation').MainNavItem) => {
         const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
         const hasChildren = item.children && item.children.length > 0;
         
@@ -38,11 +38,11 @@ const currentPath = Astro.url.pathname;
             <!-- Mega Menu Dropdown -->
             <div class="absolute left-1/2 -translate-x-1/2 top-full w-max min-w-[280px] max-w-2xl bg-white border border-slate-100 shadow-xl rounded-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0 z-50">
               <div class={`grid gap-8 ${(item.children?.length || 0) > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                {item.children?.map(group => (
+                {item.children?.map((group: import('../../config/navigation').NavGroup) => (
                   <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{group.group}</h3>
                     <ul class="space-y-3">
-                      {group.items.map(link => (
+                      {group.items.map((link: import("../../config/navigation").NavItem) => (
                         <li>
                           <a href={link.href} class="block text-sm font-medium text-[var(--color-brand-navy)] hover:text-[var(--color-brand-purple)] transition-colors">
                             {link.label}
@@ -98,7 +98,7 @@ const currentPath = Astro.url.pathname;
   <!-- Mobile Menu -->
   <div class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[var(--color-border-subtle)] shadow-xl overflow-y-auto max-h-[calc(100vh-5rem)]" id="mobile-menu">
     <div class="space-y-1 px-6 pb-6 pt-2">
-      {mainNav.map((item, index) => {
+      {mainNav.map((item: import("../../config/navigation").MainNavItem, index: number) => {
         const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
         const hasChildren = item.children && item.children.length > 0;
         
@@ -109,11 +109,11 @@ const currentPath = Astro.url.pathname;
               <svg class="w-5 h-5 transition-transform accordion-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div id={`mobile-menu-${index}`} class="hidden pl-4 pr-2 py-2 space-y-4">
-              {item.children?.map(group => (
+              {item.children?.map((group: import("../../config/navigation").NavGroup) => (
                 <div>
                   <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">{group.group}</h4>
                   <ul class="space-y-2 pl-2 border-l-2 border-slate-100">
-                    {group.items.map(link => (
+                    {group.items.map((link: import("../../config/navigation").NavItem) => (
                       <li>
                         <a href={link.href} class="block py-1 text-sm font-medium text-slate-600">{link.label}</a>
                       </li>

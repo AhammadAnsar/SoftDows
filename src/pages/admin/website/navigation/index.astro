@@ -198,7 +198,7 @@ const groupedItems = items.reduce((acc, item) => {
       if (res.ok) {
         window.location.reload();
       } else {
-        const data = await res.json();
+        const data = (await res.json()) as any;
         alert((data as any).error || 'Failed to delete item');
       }
     } catch (e) {
@@ -243,7 +243,7 @@ const groupedItems = items.reduce((acc, item) => {
       if (res.ok) {
         window.location.reload();
       } else {
-        const data = await res.json();
+        const data = (await res.json()) as any;
         alert((data as any).error || 'Failed to save item');
       }
     } catch (e) {
