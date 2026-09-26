@@ -1,0 +1,138 @@
+---
+export const prerender = false;
+import PortalLayout from '../../../../layouts/PortalLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../../lib/db';
+import { getAuthorizedClientContext } from '../../../../lib/portal/auth';
+import { quotations, quotationItems } from '../../../../lib/db/schema/billing';
+import { eq, asc } from 'drizzle-orm';
+import StatusBadge from '../../../../components/admin/StatusBadge.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+const db = getDb((env as any).DB);
+const ctx = await getAuthorizedClientContext(db, user.id);
+if (!ctx.authorized || !ctx.clientId) return Astro.redirect('/admin/access-denied');
+const clientId = ctx.clientId;
+
+const { id } = Astro.params;
+if (!id) return new Response('Not Found', { status: 404 });
+
+const [quotation] = await db.select()
+  .from(quotations)
+  .where(eq(quotations.id, id));
+
+if (!quotation) return new Response('Not Found', { status: 404 });
+if (quotation.clientId !== clientId) return new Response('Not Found', { status: 404 });
+
+const items = await db.select()
+  .from(quotationItems)
+  .where(eq(quotationItems.quotationId, id))
+  .orderBy(asc(quotationItems.displayOrder));
+
+const formatMoney = (amount: number, currency: string) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount / 100);
+
+function getQuotationStatus(status: string): { label: string, variant: 'success' | 'warning' | 'neutral' | 'danger' | 'info' } {
+  switch(status) {
+    case 'draft': return { label: 'Draft', variant: 'neutral' };
+    case 'sent': return { label: 'Sent', variant: 'info' };
+    case 'accepted': return { label: 'Accepted', variant: 'success' };
+    case 'rejected': return { label: 'Rejected', variant: 'danger' };
+    case 'expired': return { label: 'Expired', variant: 'warning' };
+    case 'cancelled': return { label: 'Cancelled', variant: 'neutral' };
+    default: return { label: status, variant: 'neutral' };
+  }
+}
+const s = getQuotationStatus(quotation.status);
+---
+
+<PortalLayout title={`Quotation ${quotation.quotationNumber}`} user={user}>
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <h1 class="text-2xl font-bold text-slate-800">{quotation.quotationNumber}</h1>
+        <StatusBadge label={s.label} variant={s.variant} />
+      </div>
+      <p class="text-slate-600">Issued on {new Date(quotation.issueDate).toLocaleDateString()}</p>
+    </div>
+    <div>
+      <a href={`/api/quotations/${quotation.id}/pdf`} target="_blank" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white border rounded-lg shadow-sm overflow-hidden mb-6">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 border-b">
+          <tr>
+            <th class="p-4 font-medium text-slate-500">Description</th>
+            <th class="p-4 font-medium text-slate-500 text-right">Qty</th>
+            <th class="p-4 font-medium text-slate-500 text-right">Unit Price</th>
+            <th class="p-4 font-medium text-slate-500 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {items.map((item) => (
+            <tr class="hover:bg-slate-50">
+              <td class="p-4 text-slate-900">{item.description}</td>
+              <td class="p-4 text-slate-600 text-right">{item.quantity}</td>
+              <td class="p-4 text-slate-600 text-right">{formatMoney(item.unitPrice, quotation.currency)}</td>
+              <td class="p-4 text-slate-900 font-medium text-right">{formatMoney(item.lineTotal, quotation.currency)}</td>
+            </tr>
+          ))}
+          {items.length === 0 && (
+            <tr>
+              <td colspan="4" class="p-8 text-center text-slate-500">
+                No items found in this quotation.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="border-t bg-slate-50 p-6">
+      <div class="w-full max-w-sm ml-auto space-y-3 text-sm">
+        <div class="flex justify-between text-slate-600">
+          <span>Subtotal</span>
+          <span>{formatMoney(quotation.subtotal, quotation.currency)}</span>
+        </div>
+        {(quotation.discount > 0) && (
+          <div class="flex justify-between text-slate-600">
+            <span>Discount</span>
+            <span>-{formatMoney(quotation.discount, quotation.currency)}</span>
+          </div>
+        )}
+        <div class="flex justify-between text-slate-600">
+          <span>Tax</span>
+          <span>{formatMoney(quotation.tax, quotation.currency)}</span>
+        </div>
+        <div class="flex justify-between text-base font-bold text-slate-900 pt-3 border-t">
+          <span>Total</span>
+          <span>{formatMoney(quotation.total, quotation.currency)}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {quotation.notes && (
+      <div class="bg-white border rounded-lg shadow-sm p-6">
+        <h3 class="text-sm font-semibold text-slate-900 mb-2">Notes</h3>
+        <div class="text-sm text-slate-600 whitespace-pre-wrap">{quotation.notes}</div>
+      </div>
+    )}
+    {quotation.terms && (
+      <div class="bg-white border rounded-lg shadow-sm p-6">
+        <h3 class="text-sm font-semibold text-slate-900 mb-2">Terms & Conditions</h3>
+        <div class="text-sm text-slate-600 whitespace-pre-wrap">{quotation.terms}</div>
+      </div>
+    )}
+  </div>
+</PortalLayout>
