@@ -1,0 +1,285 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+import { clients, clientContacts } from '../../../lib/db/schema/crm';
+import { eq, like, desc, or, and } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import { requirePermission } from '../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+requirePermission(user.role as any, 'clients', 'read');
+
+const db = getDb((env as any).DB);
+
+const searchParams = Astro.url.searchParams;
+const query = searchParams.get('q') || '';
+const statusFilter = searchParams.get('status') || '';
+const page = parseInt(searchParams.get('page') || '1') || 1;
+const limit = 25;
+const offset = (page - 1) * limit;
+
+const filters: SQL[] = [];
+if (statusFilter && statusFilter !== 'all') {
+  filters.push(eq(clients.status, statusFilter as any));
+}
+if (query) {
+  // To search across clients and contacts, we'll use a subquery or join, but Drizzle SQLite handles simple joins easily.
+  // Actually, for search, let's keep it simple: fetch clients matching name OR having a contact matching name/email.
+  const searchCondition = or(
+    like(clients.name, `%${query}%`)
+  );
+  if (searchCondition) {
+    filters.push(searchCondition);
+  }
+}
+
+const where = filters.length > 0 ? and(...filters) : undefined;
+
+// We need clients with their primary contact. Drizzle allows relational queries or joins.
+// We'll use standard left join.
+const allClients = await db
+  .select({
+    client: clients,
+    contact: clientContacts
+  })
+  .from(clients)
+  .leftJoin(clientContacts, and(
+    eq(clients.id, clientContacts.clientId),
+    eq(clientContacts.isPrimary, true)
+  ))
+  .where(where)
+  .orderBy(desc(clients.createdAt))
+  .limit(limit)
+  .offset(offset);
+
+// Note: If we wanted to search by contact email, we'd need to add it to the WHERE clause using the join.
+// Let's refine the search condition to include the contact's fields since they are joined!
+// Wait, if we use WHERE on leftJoin, it filters out clients without contacts if we're not careful.
+// Let's refine the query:
+const searchFilters: SQL[] = [];
+if (statusFilter && statusFilter !== 'all') {
+  searchFilters.push(eq(clients.status, statusFilter as any));
+}
+if (query) {
+  const q = `%${query}%`;
+  searchFilters.push(or(
+    like(clients.name, q),
+    like(clientContacts.firstName, q),
+    like(clientContacts.lastName, q),
+    like(clientContacts.email, q)
+  ) as SQL);
+}
+
+const refinedWhere = searchFilters.length > 0 ? and(...searchFilters) : undefined;
+
+const clientsList = await db
+  .select({
+    client: clients,
+    contact: clientContacts
+  })
+  .from(clients)
+  .leftJoin(clientContacts, and(
+    eq(clients.id, clientContacts.clientId),
+    eq(clientContacts.isPrimary, true)
+  ))
+  .where(refinedWhere)
+  .orderBy(desc(clients.createdAt))
+  .limit(limit)
+  .offset(offset);
+
+const statusColors: Record<string, string> = {
+  active: 'bg-green-50 text-green-700 border-green-200',
+  inactive: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  archived: 'bg-slate-100 text-slate-600 border-slate-200'
+};
+
+const formatStatus = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+---
+
+<AdminLayout title="Clients" user={user}>
+  <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-[#242a56]">Clients</h1>
+        <p class="mt-1 text-sm text-[#64748b]">Manage your client relationships and primary contacts.</p>
+      </div>
+      <div class="mt-4 sm:mt-0">
+        <a href="/admin/clients/new" class="inline-flex items-center justify-center px-4 py-2 bg-[#242a56] hover:bg-[#1a1e3e] text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#242a56] gap-2">
+          <AdminIcon name="plus" class="w-4 h-4" />
+          Add Client
+        </a>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-[#e2e8f0] mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
+      <form class="flex flex-col sm:flex-row w-full sm:w-auto gap-3" method="GET" action="/admin/clients">
+        <input type="hidden" name="status" value={statusFilter} class="hidden sm:block" disabled />
+        
+        <div class="relative w-full sm:w-64">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <AdminIcon name="search" class="w-4 h-4" />
+          </div>
+          <input 
+            type="text" 
+            name="q" 
+            value={query}
+            placeholder="Search clients..." 
+            class="block w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-[#6878d6] focus:border-[#6878d6]"
+          />
+        </div>
+        
+        <!-- Mobile Status Select -->
+        <select 
+          name="status" 
+          class="block sm:hidden w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-[#6878d6] focus:border-[#6878d6] appearance-none"
+          onchange="this.form.submit()"
+        >
+          {['all', 'active', 'inactive', 'archived'].map(s => (
+            <option value={s === 'all' ? '' : s} selected={(statusFilter === s) || (!statusFilter && s === 'all')}>
+              {s === 'all' ? 'All Statuses' : formatStatus(s)}
+            </option>
+          ))}
+        </select>
+
+        <button type="submit" class="hidden sm:block px-4 py-2 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#242a56] text-sm font-medium rounded-lg transition-colors">
+          Search
+        </button>
+        <button type="submit" class="block sm:hidden w-full px-4 py-2 bg-[#242a56] text-white text-sm font-medium rounded-lg transition-colors">
+          Search
+        </button>
+      </form>
+      
+      <!-- Desktop Status Pills -->
+      <div class="hidden sm:flex w-full sm:w-auto gap-2 flex-wrap">
+        {['all', 'active', 'inactive', 'archived'].map((s) => {
+          const isActive = (statusFilter === s) || (!statusFilter && s === 'all');
+          const url = new URL(Astro.url);
+          url.searchParams.set('status', s === 'all' ? '' : s);
+          url.searchParams.set('page', '1');
+          return (
+            <a 
+              href={url.toString()}
+              class:list={[
+                "whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
+                isActive ? "bg-[#242a56] text-white border-[#242a56]" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              ]}
+            >
+              {formatStatus(s)}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Clients List -->
+    <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+      {clientsList.length > 0 ? (
+        <div>
+          <!-- Mobile Cards Layout -->
+          <div class="block sm:hidden divide-y divide-[#e2e8f0]">
+            {clientsList.map(({ client, contact }) => (
+              <div class="p-4 hover:bg-[#f8fafc] transition-colors">
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 class="text-sm font-bold text-[#242a56]">{client.name}</h3>
+                    {contact && (
+                      <p class="text-xs text-[#64748b] mt-1">{contact.firstName} {contact.lastName}</p>
+                    )}
+                  </div>
+                  <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[client.status] || statusColors['active']}`}>
+                    {formatStatus(client.status)}
+                  </span>
+                </div>
+                {contact && (
+                  <div class="mt-2 text-xs font-medium text-[#6878d6]">
+                    <a href={`mailto:${contact.email}`} class="hover:underline">{contact.email}</a>
+                  </div>
+                )}
+                <div class="mt-3 flex justify-between items-center border-t border-slate-100 pt-3">
+                  <p class="text-[10px] text-slate-400">
+                    Added {client.createdAt ? new Date(client.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not provided'}
+                  </p>
+                  <a href={`/admin/clients/${client.id}`} class="text-xs font-medium text-[#6878d6]">
+                    View Client &rarr;
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Desktop Table Layout -->
+          <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-[#f8fafc] border-b border-[#e2e8f0]">
+                  <th class="px-6 py-4 text-xs font-bold text-[#64748b] uppercase tracking-wider">Client / Business Name</th>
+                  <th class="px-6 py-4 text-xs font-bold text-[#64748b] uppercase tracking-wider hidden sm:table-cell">Primary Contact</th>
+                  <th class="px-6 py-4 text-xs font-bold text-[#64748b] uppercase tracking-wider hidden md:table-cell">Added</th>
+                  <th class="px-6 py-4 text-xs font-bold text-[#64748b] uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#e2e8f0]">
+                {clientsList.map(({ client, contact }) => (
+                  <tr class="hover:bg-[#f8fafc] transition-colors group">
+                    <td class="px-6 py-4 align-top">
+                      <p class="text-sm font-bold text-[#242a56]">{client.name}</p>
+                    </td>
+                    <td class="px-6 py-4 align-top hidden sm:table-cell">
+                      {contact ? (
+                        <>
+                          <p class="text-sm text-slate-700 font-medium">{contact.firstName} {contact.lastName}</p>
+                          <a href={`mailto:${contact.email}`} class="text-xs text-[#6878d6] hover:underline mt-0.5 inline-block">{contact.email}</a>
+                        </>
+                      ) : (
+                        <p class="text-xs text-slate-400 italic">No primary contact</p>
+                      )}
+                    </td>
+                    <td class="px-6 py-4 align-top hidden md:table-cell">
+                      <p class="text-sm text-slate-600">
+                        {client.createdAt ? new Date(client.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not provided'}
+                      </p>
+                    </td>
+                    <td class="px-6 py-4 align-top">
+                      <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusColors[client.status] || statusColors['active']}`}>
+                        {formatStatus(client.status)}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 align-top text-right">
+                      <a href={`/admin/clients/${client.id}`} class="inline-flex items-center justify-center p-2 rounded-lg text-[#6878d6] hover:bg-[#eff2ff] hover:text-[#242a56] transition-colors font-medium text-sm">
+                        View
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div class="px-6 py-16 text-center">
+          <div class="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-4 border border-slate-200">
+            <AdminIcon name="briefcase" class="w-6 h-6 text-slate-400" />
+          </div>
+          <h3 class="text-sm font-bold text-[#242a56]">No clients found</h3>
+          <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+            {query || statusFilter ? 'Try adjusting your filters or search terms.' : 'Clients will appear here when you add one manually or convert a Lead.'}
+          </p>
+          {(query || statusFilter) && (
+            <a href="/admin/clients" class="mt-4 inline-flex items-center text-sm font-medium text-[#6878d6] hover:text-[#242a56]">
+              Clear filters
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+    
+  </div>
+</AdminLayout>

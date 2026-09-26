@@ -1,0 +1,52 @@
+---
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonicalURL?: string;
+  noindex?: boolean;
+}
+
+const { 
+  title, 
+  description = "SoftDows - Professional Digital Services Agency providing custom software, web design, and digital visibility solutions.",
+  canonicalURL = Astro.url.href,
+  noindex = false
+} = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    
+    <!-- SEO Core -->
+    <title>{title}</title>
+    <link rel="canonical" href={canonicalURL} />
+    
+    <!-- OpenGraph (Foundation slots) -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:type" content="website" />
+    
+  </head>
+  <body class="flex min-h-screen flex-col bg-[var(--color-brand-white)] text-[var(--color-text-main)] antialiased">
+    <Header />
+    
+    <!-- Main content flex-grow pushes footer to bottom -->
+    <main class="flex-grow flex flex-col w-full relative">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>
+

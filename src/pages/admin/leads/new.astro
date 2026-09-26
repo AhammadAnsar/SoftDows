@@ -1,0 +1,203 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+import { leads } from '../../../lib/db/schema/crm';
+import { auditLogs } from '../../../lib/db/schema/audit';
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import { requirePermission } from '../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+requirePermission(user.role as any, 'leads', 'create');
+
+let errors: Record<string, string> = {};
+let formData = {
+  name: '',
+  email: '',
+  company: '',
+  phone: '',
+  requestedService: '',
+  budgetRange: '',
+  description: '',
+  internalNotes: ''
+};
+
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+    
+    formData = {
+      name: data.get('name')?.toString().trim() || '',
+      email: data.get('email')?.toString().trim() || '',
+      company: data.get('company')?.toString().trim() || '',
+      phone: data.get('phone')?.toString().trim() || '',
+      requestedService: data.get('requestedService')?.toString().trim() || '',
+      budgetRange: data.get('budgetRange')?.toString().trim() || '',
+      description: data.get('description')?.toString().trim() || '',
+      internalNotes: data.get('internalNotes')?.toString().trim() || ''
+    };
+
+    if (!formData.name) errors.name = 'Name is required.';
+    if (!formData.email) errors.email = 'Email is required.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Valid email is required.';
+    const VALID_SERVICES = [
+      'Website Design & Development',
+      'Custom Software & Web Applications',
+      'eCommerce Development',
+      'UI/UX Design',
+      'SEO & Digital Visibility',
+      'Website Maintenance & Support',
+      'Not sure / Need guidance'
+    ];
+    if (!formData.requestedService) {
+      errors.requestedService = 'Service is required.';
+    } else if (!VALID_SERVICES.includes(formData.requestedService)) {
+      errors.requestedService = 'Invalid service selected.';
+    }
+
+    if (Object.keys(errors).length === 0) {
+      const db = getDb((env as any).DB);
+      const newId = crypto.randomUUID();
+
+      const inserted = await db.insert(leads).values({
+        id: newId,
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || null,
+        phone: formData.phone || null,
+        requestedService: formData.requestedService,
+        budgetRange: formData.budgetRange || null,
+        description: formData.description || null,
+        internalNotes: formData.internalNotes || null,
+        status: 'new'
+      }).returning({ id: leads.id });
+      
+      const leadId = inserted[0].id;
+
+      // Log creation
+      await db.insert(auditLogs).values({
+        id: crypto.randomUUID(),
+        action: 'lead_created_manually',
+        entityType: 'lead',
+        entityId: leadId,
+        actorId: user.id,
+        details: {
+          name: formData.name,
+          email: formData.email
+        }
+      });
+
+      return Astro.redirect(`/admin/leads/${leadId}`);
+    }
+  } catch (err) {
+    console.error('Lead creation error:', err);
+    errors.system = 'An unexpected error occurred.';
+  }
+}
+---
+
+<AdminLayout title="Add Lead" user={user}>
+  <div class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+    
+    <div class="mb-8 flex items-center gap-4">
+      <a href="/admin/leads" class="p-2 -ml-2 text-[#64748b] hover:text-[#242a56] rounded-lg hover:bg-slate-100 transition-colors">
+        <AdminIcon name="chevron-left" class="w-5 h-5" />
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-[#242a56]">Add Manual Lead</h1>
+        <p class="mt-1 text-sm text-[#64748b]">Create a project enquiry manually from offline sources.</p>
+      </div>
+    </div>
+
+    <form method="POST" class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+      
+      {errors.system && (
+        <div class="m-6 mb-0 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 font-medium text-sm">
+          {errors.system}
+        </div>
+      )}
+
+      <div class="p-6 space-y-6">
+        
+        <!-- Section: Contact -->
+        <h2 class="text-base font-bold text-[#242a56] border-b border-slate-100 pb-2">Contact Details</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="name" class="block text-sm font-bold text-[#242a56] mb-1.5">Full Name <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name" value={formData.name} class:list={["w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2", errors.name ? "border-red-300 focus:ring-red-200" : "border-slate-300 focus:ring-[#6878d6]/20 focus:border-[#6878d6]"]} />
+            {errors.name && <p class="mt-1 text-xs text-red-500">{errors.name}</p>}
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-bold text-[#242a56] mb-1.5">Email Address <span class="text-red-500">*</span></label>
+            <input type="email" id="email" name="email" value={formData.email} class:list={["w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2", errors.email ? "border-red-300 focus:ring-red-200" : "border-slate-300 focus:ring-[#6878d6]/20 focus:border-[#6878d6]"]} />
+            {errors.email && <p class="mt-1 text-xs text-red-500">{errors.email}</p>}
+          </div>
+          <div>
+            <label for="company" class="block text-sm font-bold text-[#242a56] mb-1.5">Company <span class="text-slate-400 font-normal ml-1">(Optional)</span></label>
+            <input type="text" id="company" name="company" value={formData.company} class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6]" />
+          </div>
+          <div>
+            <label for="phone" class="block text-sm font-bold text-[#242a56] mb-1.5">Phone / WhatsApp <span class="text-slate-400 font-normal ml-1">(Optional)</span></label>
+            <input type="tel" id="phone" name="phone" value={formData.phone} class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6]" />
+          </div>
+        </div>
+
+        <!-- Section: Project -->
+        <h2 class="text-base font-bold text-[#242a56] border-b border-slate-100 pb-2 mt-8">Project Details</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="requestedService" class="block text-sm font-bold text-[#242a56] mb-1.5">Requested Service <span class="text-red-500">*</span></label>
+            <select id="requestedService" name="requestedService" class:list={["w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 bg-white", errors.requestedService ? "border-red-300 focus:ring-red-200" : "border-slate-300 focus:ring-[#6878d6]/20 focus:border-[#6878d6]"]}>
+              <option value="" disabled selected={!formData.requestedService}>Select a service...</option>
+              <option value="Website Design & Development" selected={formData.requestedService === 'Website Design & Development'}>Website Design & Development</option>
+              <option value="Custom Software & Web Applications" selected={formData.requestedService === 'Custom Software & Web Applications'}>Custom Software & Web Applications</option>
+              <option value="eCommerce Development" selected={formData.requestedService === 'eCommerce Development'}>eCommerce Development</option>
+              <option value="UI/UX Design" selected={formData.requestedService === 'UI/UX Design'}>UI/UX Design</option>
+              <option value="SEO & Digital Visibility" selected={formData.requestedService === 'SEO & Digital Visibility'}>SEO & Digital Visibility</option>
+              <option value="Website Maintenance & Support" selected={formData.requestedService === 'Website Maintenance & Support'}>Website Maintenance & Support</option>
+              <option value="Not sure / Need guidance" selected={formData.requestedService === 'Not sure / Need guidance'}>Not sure / Need guidance</option>
+            </select>
+            {errors.requestedService && <p class="mt-1 text-xs text-red-500">{errors.requestedService}</p>}
+          </div>
+          <div>
+            <label for="budgetRange" class="block text-sm font-bold text-[#242a56] mb-1.5">Estimated Budget <span class="text-slate-400 font-normal ml-1">(Optional)</span></label>
+            <select id="budgetRange" name="budgetRange" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white">
+              <option value="" disabled selected={!formData.budgetRange}>Select a range...</option>
+              <optgroup label="USD">
+                <option value="< $1,000 USD" selected={formData.budgetRange === '< $1,000 USD'}>Less than $1,000 USD</option>
+                <option value="$1,000 - $5,000 USD" selected={formData.budgetRange === '$1,000 - $5,000 USD'}>$1,000 - $5,000 USD</option>
+                <option value="$5,000 - $10,000 USD" selected={formData.budgetRange === '$5,000 - $10,000 USD'}>$5,000 - $10,000 USD</option>
+                <option value="$10,000+ USD" selected={formData.budgetRange === '$10,000+ USD'}>$10,000+ USD</option>
+              </optgroup>
+              <optgroup label="BDT">
+                <option value="< 1,00,000 BDT" selected={formData.budgetRange === '< 1,00,000 BDT'}>Less than 1,00,000 BDT</option>
+                <option value="1,00,000 - 5,00,000 BDT" selected={formData.budgetRange === '1,00,000 - 5,00,000 BDT'}>1,00,000 - 5,00,000 BDT</option>
+                <option value="5,00,000+ BDT" selected={formData.budgetRange === '5,00,000+ BDT'}>5,00,000+ BDT</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label for="description" class="block text-sm font-bold text-[#242a56] mb-1.5">Project Description</label>
+            <textarea id="description" name="description" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] resize-y">{formData.description}</textarea>
+          </div>
+        </div>
+
+        <!-- Section: Staff -->
+        <h2 class="text-base font-bold text-[#242a56] border-b border-slate-100 pb-2 mt-8">Internal</h2>
+        <div>
+          <label for="internalNotes" class="block text-sm font-bold text-[#242a56] mb-1.5">Internal Notes</label>
+          <textarea id="internalNotes" name="internalNotes" rows="3" placeholder="Context from phone call or referral..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] resize-y">{formData.internalNotes}</textarea>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-4 bg-[#f8fafc] border-t border-[#e2e8f0] flex justify-end gap-3">
+        <a href="/admin/leads" class="px-4 py-2 text-sm font-medium text-[#475569] hover:text-[#242a56] hover:bg-slate-100 rounded-lg transition-colors">Cancel</a>
+        <button type="submit" class="px-6 py-2 bg-[#242a56] hover:bg-[#1a1e3e] text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#242a56]">Create Lead</button>
+      </div>
+
+    </form>
+  </div>
+</AdminLayout>

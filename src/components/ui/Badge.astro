@@ -1,0 +1,23 @@
+---
+interface Props {
+  class?: string;
+  variant?: 'primary' | 'secondary' | 'outline' | 'default' | 'inverse';
+}
+const { class: className = '', variant = 'default' } = Astro.props;
+
+const baseStyles = "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold tracking-widest uppercase transition-colors";
+
+const variants = {
+  default: "bg-[var(--color-brand-light)] text-[var(--color-brand-purple)]",
+  primary: "bg-[var(--color-brand-purple)] text-white shadow-sm",
+  secondary: "bg-slate-100 text-slate-700",
+  outline: "bg-transparent border border-slate-300 text-slate-600",
+  inverse: "bg-white/10 text-white border border-white/20 backdrop-blur-sm"
+};
+
+const classes = `${baseStyles} ${variants[variant]} ${className}`;
+---
+<span class={classes}>
+  <slot />
+</span>
+

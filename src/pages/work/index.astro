@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Badge from '../../components/ui/Badge.astro';
+import CaseStudyCard from '../../components/work/CaseStudyCard.astro';
+
+// Fetch published work projects
+const allWork = await getCollection('work');
+const publishedWork = allWork.filter(project => !project.data.isDraft);
+const hasWork = publishedWork.length > 0;
+
+// Requirement: Do not present an empty portfolio page to visitors.
+// If zero case studies are published, automatically redirect away from this route.
+if (!hasWork) {
+  return Astro.redirect('/');
+}
+
+// Sort by featured first, then by date (if available)
+publishedWork.sort((a, b) => {
+  if (a.data.featured && !b.data.featured) return -1;
+  if (!a.data.featured && b.data.featured) return 1;
+  
+  const dateA = a.data.completionDate ? new Date(a.data.completionDate).getTime() : 0;
+  const dateB = b.data.completionDate ? new Date(b.data.completionDate).getTime() : 0;
+  return dateB - dateA;
+});
+---
+
+<MainLayout 
+  title="Our Work | SoftDows"
+  description="Explore our recent digital projects, case studies, and engineering solutions."
+>
+  <Section variant="alternate" size="normal" class="pt-20 pb-16 md:pt-32 md:pb-24">
+    <div class="max-w-3xl">
+      <Badge class="mb-6">Case Studies</Badge>
+      <h1 class="mb-6 text-4xl sm:text-5xl lg:text-6xl text-[var(--color-brand-navy)] font-bold tracking-tight leading-tight">
+        Work & Engineering
+      </h1>
+      <p class="mb-10 text-lg sm:text-xl text-[var(--color-text-muted)] leading-relaxed">
+        Discover how we engineer practical, scalable digital solutions for growing businesses.
+      </p>
+    </div>
+  </Section>
+
+  <Section variant="default" size="normal">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+      {publishedWork.map(project => (
+        <CaseStudyCard project={project} />
+      ))}
+    </div>
+  </Section>
+</MainLayout>
+

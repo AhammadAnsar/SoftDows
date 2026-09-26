@@ -1,0 +1,349 @@
+---
+interface Props {
+  concept: 
+    | 'hero-system' 
+    | 'website-design' 
+    | 'custom-software' 
+    | 'ecommerce' 
+    | 'ui-ux' 
+    | 'seo' 
+    | 'maintenance'
+    | 'collaboration'
+    | 'founder-monogram'
+    | 'editorial-cover'
+    | 'case-study';
+  class?: string;
+  name?: string;
+}
+
+const { concept, class: className = '', name = 'AA' } = Astro.props;
+
+// Increased base contrast: slate-50 -> slate-100, border-slate-200 -> border-slate-300
+const bgBase = "bg-slate-50 border border-slate-300 overflow-hidden relative flex items-center justify-center";
+---
+
+<div class={`${bgBase} ${className}`}>
+  {/* Stronger grid pattern */}
+  {concept !== 'founder-monogram' && (
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#0000000d_1px,transparent_1px),linear-gradient(to_bottom,#0000000d_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+  )}
+
+  {concept === 'hero-system' && (
+    <div class="relative w-full h-full p-6 md:p-10 flex items-center justify-center overflow-hidden group">
+      {/* Stronger background glow */}
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(ellipse_at_center,var(--color-brand-purple)_0%,transparent_50%)] opacity-10 blur-3xl group-hover:opacity-20 transition-opacity duration-1000"></div>
+      
+      {/* Abstract Browser Frame - Higher Contrast */}
+      <div class="relative z-10 w-full max-w-[400px] aspect-[4/3] bg-white rounded-xl shadow-2xl border border-slate-300 overflow-hidden flex flex-col transform group-hover:-translate-y-2 transition-all duration-700">
+        <div class="h-10 border-b border-slate-200 bg-slate-100 flex items-center px-4 gap-2 shrink-0">
+          <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+          <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+          <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+          <div class="ml-4 flex-grow h-4 bg-white rounded border border-slate-200 opacity-60"></div>
+        </div>
+        <div class="flex-grow p-6 flex flex-col gap-4 bg-slate-50 relative">
+          <div class="flex gap-4 items-center">
+            <div class="w-16 h-16 bg-[var(--color-brand-navy)] rounded-lg shadow-md shrink-0 flex items-center justify-center text-white">
+              <svg class="w-8 h-8 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+            </div>
+            <div class="flex flex-col gap-2 w-full">
+              <div class="h-4 bg-slate-300 rounded w-full"></div>
+              <div class="h-3 bg-slate-200 rounded w-2/3"></div>
+            </div>
+          </div>
+          <div class="flex-grow bg-indigo-50/80 rounded-lg border border-indigo-200 shadow-inner flex flex-col gap-3 p-4">
+             <div class="h-3 bg-indigo-200/50 rounded w-1/2"></div>
+             <div class="h-3 bg-indigo-200/50 rounded w-3/4"></div>
+             <div class="h-3 bg-indigo-200/50 rounded w-2/3"></div>
+          </div>
+        </div>
+        
+        {/* Floating Node - Strong focal point */}
+        <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-[var(--color-brand-navy)] rounded-xl shadow-2xl border border-[var(--color-brand-purple)]/30 p-4 flex flex-col gap-3 transform group-hover:-translate-y-4 group-hover:-translate-x-4 transition-transform duration-700 delay-100 z-20">
+           <div class="flex items-center gap-2 mb-2">
+             <div class="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+             <div class="h-2 bg-slate-600 rounded flex-grow"></div>
+           </div>
+           <div class="h-2 bg-slate-700 rounded w-full"></div>
+           <div class="h-2 bg-slate-700 rounded w-full"></div>
+           <div class="mt-auto h-8 bg-[var(--color-brand-purple)] rounded-md w-full shadow-lg flex items-center justify-center text-white/50 text-[10px] uppercase font-bold tracking-widest">Active</div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {concept === 'website-design' && (
+    <div class="relative w-full h-full flex flex-col items-center justify-center p-6 gap-6 group">
+      <div class="relative w-full max-w-sm flex items-end justify-center gap-4 z-10">
+        {/* Desktop representation */}
+        <div class="w-2/3 aspect-video bg-white rounded-t-xl shadow-xl border border-b-0 border-slate-300 flex flex-col overflow-hidden relative transform group-hover:-translate-y-2 transition-transform duration-500">
+           <div class="h-6 bg-slate-100 border-b border-slate-200 flex items-center px-3 gap-1.5 shrink-0">
+             <div class="w-2 h-2 rounded-full bg-slate-300"></div><div class="w-2 h-2 rounded-full bg-slate-300"></div>
+           </div>
+           <div class="flex-grow p-3 flex flex-col gap-2">
+             <div class="h-10 w-full bg-[var(--color-brand-navy)] rounded-md"></div>
+             <div class="flex gap-2 flex-grow">
+               <div class="w-1/3 h-full bg-slate-100 rounded-md"></div>
+               <div class="w-2/3 h-full bg-slate-50 border border-slate-100 rounded-md"></div>
+             </div>
+           </div>
+        </div>
+        
+        {/* Mobile representation (Focal Point) */}
+        <div class="w-1/4 aspect-[9/16] bg-[var(--color-brand-navy)] rounded-xl shadow-2xl border-4 border-slate-800 flex flex-col overflow-hidden relative transform translate-y-4 group-hover:-translate-y-4 transition-transform duration-500 delay-100 z-20">
+          <div class="h-4 bg-slate-800 w-full shrink-0 flex justify-center"><div class="w-1/3 h-1 bg-black rounded-b-md"></div></div>
+          <div class="flex-grow p-2 flex flex-col gap-2">
+            <div class="h-6 w-full bg-[var(--color-brand-purple)] rounded shadow-sm"></div>
+            <div class="h-12 w-full bg-slate-700 rounded border border-slate-600"></div>
+            <div class="flex-grow w-full bg-slate-800/50 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {concept === 'custom-software' && (
+    <div class="relative w-full h-full flex items-center justify-center p-6 group">
+      {/* Network of modules */}
+      <div class="relative w-full max-w-[280px] aspect-square z-10">
+        {/* Connection Lines (Stronger) */}
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+          <path d="M20 50 L50 20 L80 50 L50 80 Z" fill="none" stroke="currentColor" stroke-width="2.5" class="text-slate-300 stroke-dasharray-[4_4] group-hover:text-[var(--color-brand-purple)] group-hover:opacity-50 transition-all duration-700" />
+          <path d="M50 20 L50 80 M20 50 L80 50" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-200 transition-all duration-700" />
+        </svg>
+        
+        {/* Nodes */}
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white border-2 border-slate-300 shadow-md rounded-xl flex items-center justify-center group-hover:border-[var(--color-brand-navy)] transition-colors duration-500">
+          <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-14 h-14 bg-white border-2 border-slate-300 shadow-md rounded-xl flex items-center justify-center group-hover:border-[var(--color-brand-navy)] transition-colors duration-500 delay-100">
+          <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+        </div>
+        <div class="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white border-2 border-slate-300 shadow-md rounded-xl flex items-center justify-center group-hover:border-[var(--color-brand-navy)] transition-colors duration-500 delay-75">
+          <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </div>
+        <div class="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white border-2 border-slate-300 shadow-md rounded-xl flex items-center justify-center group-hover:border-[var(--color-brand-navy)] transition-colors duration-500 delay-150">
+          <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        
+        {/* Central Core (Focal Point) */}
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-[var(--color-brand-navy)] border-4 border-indigo-100 shadow-2xl rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500 z-20">
+          <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {concept === 'ecommerce' && (
+    <div class="relative w-full h-full flex flex-col items-center justify-center gap-6 p-6 group">
+      {/* Product Grid */}
+      <div class="flex gap-4 w-full max-w-sm relative z-10 justify-center">
+        <div class="w-32 aspect-[3/4] bg-white rounded-xl shadow-md border border-slate-300 p-2 flex flex-col gap-2 transform group-hover:-translate-y-3 transition-transform duration-500">
+          <div class="flex-grow bg-slate-100 rounded-lg flex items-center justify-center text-slate-300"><svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
+          <div class="h-2 w-3/4 bg-slate-400 rounded"></div>
+          <div class="h-2 w-1/3 bg-slate-200 rounded"></div>
+        </div>
+        {/* Highlighted Product */}
+        <div class="w-32 aspect-[3/4] bg-white rounded-xl shadow-xl border-2 border-[var(--color-brand-purple)] p-2 flex flex-col gap-2 transform group-hover:-translate-y-6 transition-transform duration-500 delay-75 z-20">
+          <div class="flex-grow bg-indigo-50 rounded-lg flex items-center justify-center text-[var(--color-brand-purple)]/50"><svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg></div>
+          <div class="h-2 w-3/4 bg-slate-800 rounded"></div>
+          <div class="h-3 w-1/2 bg-[var(--color-brand-purple)] rounded mt-1"></div>
+        </div>
+        <div class="w-32 aspect-[3/4] bg-white rounded-xl shadow-md border border-slate-300 p-2 flex flex-col gap-2 transform group-hover:-translate-y-2 transition-transform duration-500 delay-150">
+          <div class="flex-grow bg-slate-100 rounded-lg flex items-center justify-center text-slate-300"><svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
+          <div class="h-2 w-3/4 bg-slate-400 rounded"></div>
+          <div class="h-2 w-1/3 bg-slate-200 rounded"></div>
+        </div>
+      </div>
+      {/* Checkout Button Representation */}
+      <div class="w-full max-w-[200px] h-12 bg-[var(--color-brand-navy)] shadow-lg rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform duration-500 z-10">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <div class="h-2.5 w-16 bg-white/80 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {concept === 'ui-ux' && (
+    <div class="relative w-full h-full flex items-center justify-center p-6 md:p-10 group">
+       <div class="relative w-full max-w-[320px] aspect-[4/3] flex items-center justify-center">
+         {/* Wireframe layer (Background) */}
+         <div class="absolute inset-4 border-[3px] border-slate-300 border-dashed rounded-2xl p-5 flex flex-col gap-4 opacity-100 group-hover:opacity-0 transition-opacity duration-700 bg-slate-50 z-10">
+            <div class="h-6 border-[3px] border-slate-300 border-dashed w-1/2 rounded-md"></div>
+            <div class="flex-grow border-[3px] border-slate-300 border-dashed rounded-xl w-full"></div>
+         </div>
+         
+         {/* Rendered layer (Foreground Focal Point) */}
+         <div class="absolute inset-0 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 flex flex-col gap-5 opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-105 transition-all duration-700 z-20">
+            <div class="flex items-center justify-between">
+              <div class="h-6 bg-[var(--color-brand-navy)] w-1/3 rounded-md"></div>
+              <div class="flex gap-2">
+                <div class="w-8 h-8 rounded-full bg-slate-100"></div>
+                <div class="w-8 h-8 rounded-full bg-[var(--color-brand-purple)]/10 text-[var(--color-brand-purple)] flex items-center justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div>
+              </div>
+            </div>
+            <div class="flex-grow bg-gradient-to-br from-indigo-50 to-white rounded-xl border border-slate-100 w-full shadow-inner p-4 flex flex-col justify-end">
+              <div class="w-full h-1/2 bg-white rounded-lg shadow-sm border border-slate-100"></div>
+            </div>
+            <div class="flex justify-end gap-3">
+              <div class="h-10 w-24 bg-slate-100 rounded-lg shadow-sm"></div>
+              <div class="h-10 w-24 bg-[var(--color-brand-purple)] rounded-lg shadow-md shadow-[var(--color-brand-purple)]/30"></div>
+            </div>
+         </div>
+       </div>
+    </div>
+  )}
+
+  {concept === 'seo' && (
+    <div class="relative w-full h-full flex flex-col p-6 lg:p-10 group overflow-hidden items-center justify-end">
+      
+      {/* Search Bar Concept (Top) */}
+      <div class="absolute top-8 left-1/2 -translate-x-1/2 w-3/4 max-w-sm h-12 bg-white rounded-full shadow-md border border-slate-200 flex items-center px-4 z-20 transform group-hover:-translate-y-2 transition-transform duration-500">
+        <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <div class="ml-3 h-2 w-1/3 bg-slate-200 rounded"></div>
+      </div>
+
+      {/* Chart */}
+      <div class="w-full max-w-md h-48 flex items-end justify-between gap-3 relative z-10 border-b-2 border-slate-200 pb-2">
+        {[30, 45, 40, 65, 55, 90].map((h, i) => (
+          <div class="w-1/6 flex flex-col items-center gap-2 group-hover:opacity-100 opacity-80 transition-opacity">
+            <div 
+              class={`w-full rounded-t-md transition-all duration-700 ease-out shadow-sm`}
+              style={`height: ${h}%; background-color: ${i === 5 ? 'var(--color-brand-purple)' : 'var(--color-brand-navy)'}; transform: scaleY(0.1); transform-origin: bottom;`}
+              onload="this.style.transform='scaleY(1)'"
+              data-animate-bar
+            ></div>
+          </div>
+        ))}
+        {/* Trend line overlay */}
+        <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+           <path d="M5 70 L22 55 L40 60 L58 35 L75 45 L95 10" fill="none" stroke="var(--color-brand-purple)" stroke-width="2" class="opacity-0 group-hover:opacity-100 transition-opacity duration-1000 delay-300" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </div>
+  )}
+
+  {concept === 'maintenance' && (
+    <div class="relative w-full h-full flex flex-col items-center justify-center p-6 group">
+      {/* Central Server/System Icon */}
+      <div class="relative w-40 h-40 flex items-center justify-center z-10">
+        {/* Outer Rotating Ring */}
+        <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+        <div class="absolute inset-[-4px] rounded-full border-4 border-[var(--color-brand-purple)] border-t-transparent border-r-transparent transform rotate-45 group-hover:rotate-[405deg] transition-transform duration-1000 ease-in-out"></div>
+        
+        {/* Inner Structure */}
+        <div class="w-24 h-24 bg-white shadow-xl border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-3 p-3 z-20 relative">
+          {/* Server lights */}
+          <div class="w-full h-4 bg-slate-100 rounded-sm flex items-center px-2 gap-1">
+            <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
+            <div class="h-1 w-8 bg-slate-200 rounded ml-1"></div>
+          </div>
+          <div class="w-full h-4 bg-slate-100 rounded-sm flex items-center px-2 gap-1">
+            <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
+            <div class="h-1 w-8 bg-slate-200 rounded ml-1"></div>
+          </div>
+          <div class="w-full h-4 bg-slate-100 rounded-sm flex items-center px-2 gap-1">
+            <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
+            <div class="h-1 w-8 bg-slate-200 rounded ml-1"></div>
+          </div>
+        </div>
+
+        {/* Floating Shield */}
+        <div class="absolute -right-4 -bottom-4 bg-[var(--color-brand-navy)] text-white p-2 rounded-lg shadow-lg border border-slate-700 transform group-hover:scale-110 transition-transform z-30">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {concept === 'collaboration' && (
+    <div class="relative w-full h-full flex items-center justify-center p-6 group overflow-hidden bg-slate-50">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-brand-purple)_0%,transparent_60%)] opacity-5 group-hover:opacity-10 transition-opacity duration-1000"></div>
+      <div class="relative w-full max-w-[300px] h-64 z-10 flex items-center justify-center">
+        
+        {/* Network Connections */}
+        <svg class="absolute inset-0 w-full h-full text-slate-300 group-hover:text-slate-400 transition-colors" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M50 25 L20 70 M50 25 L80 70 M20 70 L80 70" class="stroke-dasharray-[4_4] group-hover:stroke-[var(--color-brand-purple)] group-hover:opacity-50 transition-all duration-700" />
+        </svg>
+
+        {/* Top Node (Lead) */}
+        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-20 h-20 bg-[var(--color-brand-navy)] rounded-full shadow-2xl border-4 border-white flex flex-col items-center justify-center transform group-hover:-translate-y-2 transition-transform duration-500 z-20">
+          <div class="w-8 h-8 rounded-full bg-slate-700 mb-1"></div>
+          <div class="h-1.5 w-8 bg-slate-600 rounded"></div>
+        </div>
+        
+        {/* Bottom Left Node */}
+        <div class="absolute bottom-[10%] left-[10%] w-16 h-16 bg-white rounded-full shadow-xl border-4 border-slate-100 flex flex-col items-center justify-center transform group-hover:-translate-x-2 transition-transform duration-500 delay-75 z-20">
+          <div class="w-6 h-6 rounded-full bg-slate-200 mb-1"></div>
+          <div class="h-1.5 w-6 bg-slate-100 rounded"></div>
+        </div>
+        
+        {/* Bottom Right Node */}
+        <div class="absolute bottom-[10%] right-[10%] w-16 h-16 bg-white rounded-full shadow-xl border-4 border-slate-100 flex flex-col items-center justify-center transform group-hover:translate-x-2 transition-transform duration-500 delay-150 z-20">
+          <div class="w-6 h-6 rounded-full bg-slate-200 mb-1"></div>
+          <div class="h-1.5 w-6 bg-slate-100 rounded"></div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {concept === 'founder-monogram' && (
+    <div class="relative w-full h-full flex flex-col items-center justify-center bg-[#0B0E23] text-white overflow-hidden group rounded-[inherit]">
+      <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      
+      {/* Stronger lighting */}
+      <div class="absolute top-[-20%] right-[-20%] w-72 h-72 bg-[var(--color-brand-purple)] opacity-30 rounded-full blur-[60px] group-hover:opacity-50 group-hover:scale-125 transition-all duration-1000"></div>
+      <div class="absolute bottom-[-10%] left-[-10%] w-48 h-48 bg-indigo-500 opacity-20 rounded-full blur-[50px]"></div>
+      
+      {/* Structural Frame */}
+      <div class="absolute inset-6 border border-white/10 rounded-[1.5rem] pointer-events-none group-hover:border-white/20 transition-colors duration-700"></div>
+      
+      <div class="relative z-10 flex flex-col items-center transform group-hover:scale-105 transition-transform duration-700">
+        <span class="text-7xl md:text-8xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-500">
+          {name.split(' ').map(n => n[0]).join('')}
+        </span>
+        <div class="h-[2px] w-16 bg-gradient-to-r from-transparent via-[var(--color-brand-purple)] to-transparent mt-8 mb-4"></div>
+        <span class="text-xs uppercase tracking-[0.4em] text-slate-300 font-semibold">{name}</span>
+        <span class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-medium mt-1">Founder</span>
+      </div>
+    </div>
+  )}
+
+  {(concept === 'editorial-cover' || concept === 'case-study') && (
+    <div class="relative w-full h-full p-6 md:p-12 flex items-center justify-center group overflow-hidden bg-slate-100">
+       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-brand-navy)_0%,transparent_100%)] opacity-5"></div>
+       
+       <div class="w-full max-w-lg aspect-video bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col relative z-10 transform group-hover:-translate-y-2 group-hover:shadow-3xl transition-all duration-700">
+         <div class="h-2/3 bg-[var(--color-brand-navy)] relative flex items-center justify-center overflow-hidden">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjwvc3ZnPg==')] opacity-10"></div>
+            <svg class="w-16 h-16 text-white/20 group-hover:text-white/40 transition-colors duration-500 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+         </div>
+         <div class="h-1/3 p-5 md:p-6 flex flex-col justify-center gap-3 bg-white">
+            <div class="h-4 w-3/4 bg-slate-800 rounded"></div>
+            <div class="h-2 w-1/2 bg-slate-300 rounded"></div>
+         </div>
+       </div>
+    </div>
+  )}
+
+</div>
+
+<script>
+  // Simple intersection observer to trigger the SEO bar chart animation on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bars = entry.target.querySelectorAll('[data-animate-bar]');
+        bars.forEach((bar, index) => {
+          setTimeout(() => {
+            (bar as HTMLElement).style.transform = 'scaleY(1)';
+          }, index * 100);
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  });
+
+  document.querySelectorAll('.group:has([data-animate-bar])').forEach(el => observer.observe(el));
+</script>

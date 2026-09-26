@@ -1,0 +1,180 @@
+---
+import { mainNav } from '../../config/navigation';
+import Button from '../ui/Button.astro';
+
+const currentPath = Astro.url.pathname;
+---
+<header class="sticky top-0 z-50 w-full border-b border-[var(--color-border-subtle)] bg-white/90 backdrop-blur-xl shadow-sm shadow-slate-900/5">
+  <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+    <!-- Logo -->
+    <a href="/" class="text-2xl font-bold tracking-tight text-[var(--color-brand-navy)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-purple)] rounded-md transition-colors hover:text-[var(--color-brand-purple)] z-50">
+      SoftDows
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav class="hidden md:flex items-center gap-6 lg:gap-8" aria-label="Main Navigation">
+      {mainNav.map(item => {
+        const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
+        const hasChildren = item.children && item.children.length > 0;
+        
+        return hasChildren ? (
+          <div class="group relative py-6">
+            <a 
+              href={item.href} 
+              class={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-[var(--color-brand-purple)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-[var(--color-brand-purple)] rounded-sm ${isActive ? 'text-[var(--color-brand-purple)]' : 'text-[var(--color-text-muted)]'}`}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {item.label}
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </a>
+            
+            <!-- Mega Menu Dropdown -->
+            <div class="absolute left-1/2 -translate-x-1/2 top-full w-max min-w-[280px] max-w-2xl bg-white border border-slate-100 shadow-xl rounded-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0 z-50">
+              <div class={`grid gap-8 ${(item.children?.length || 0) > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {item.children?.map(group => (
+                  <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{group.group}</h3>
+                    <ul class="space-y-3">
+                      {group.items.map(link => (
+                        <li>
+                          <a href={link.href} class="block text-sm font-medium text-[var(--color-brand-navy)] hover:text-[var(--color-brand-purple)] transition-colors">
+                            {link.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div class="mt-6 pt-4 border-t border-slate-100">
+                <a href={item.href} class="text-sm font-bold text-[var(--color-brand-purple)] hover:text-purple-700 transition-colors flex items-center gap-1">
+                  View All {item.label}
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <a 
+            href={item.href} 
+            class={`text-sm font-medium transition-colors hover:text-[var(--color-brand-purple)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-[var(--color-brand-purple)] rounded-sm py-6 ${isActive ? 'text-[var(--color-brand-purple)]' : 'text-[var(--color-text-muted)]'}`}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </nav>
+
+    <!-- CTA & Mobile Toggle -->
+    <div class="flex items-center gap-4 z-50">
+      <Button href="/start-a-project/" class="hidden sm:inline-flex" variant="primary">Start a Project</Button>
+      
+      <button 
+        type="button" 
+        id="mobile-menu-button"
+        class="md:hidden flex items-center justify-center p-2 rounded-md text-[var(--color-text-muted)] hover:text-[var(--color-brand-navy)] hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-purple)]"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+      >
+        <span class="sr-only">Open main menu</span>
+        <svg class="h-6 w-6 menu-icon-open" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <svg class="h-6 w-6 hidden menu-icon-close" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[var(--color-border-subtle)] shadow-xl overflow-y-auto max-h-[calc(100vh-5rem)]" id="mobile-menu">
+    <div class="space-y-1 px-6 pb-6 pt-2">
+      {mainNav.map((item, index) => {
+        const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
+        const hasChildren = item.children && item.children.length > 0;
+        
+        return hasChildren ? (
+          <div class="py-2 border-b border-slate-100 last:border-0">
+            <button class="mobile-accordion-btn flex items-center justify-between w-full py-2 text-base font-semibold text-[var(--color-brand-navy)]" aria-expanded="false" aria-controls={`mobile-menu-${index}`}>
+              {item.label}
+              <svg class="w-5 h-5 transition-transform accordion-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id={`mobile-menu-${index}`} class="hidden pl-4 pr-2 py-2 space-y-4">
+              {item.children?.map(group => (
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">{group.group}</h4>
+                  <ul class="space-y-2 pl-2 border-l-2 border-slate-100">
+                    {group.items.map(link => (
+                      <li>
+                        <a href={link.href} class="block py-1 text-sm font-medium text-slate-600">{link.label}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <a href={item.href} class="block pt-2 text-sm font-bold text-[var(--color-brand-purple)]">View All {item.label} &rarr;</a>
+            </div>
+          </div>
+        ) : (
+          <a
+            href={item.href}
+            class={`block rounded-md px-3 py-3 text-base font-medium transition-colors ${
+              isActive 
+                ? 'bg-[var(--color-brand-purple)]/5 text-[var(--color-brand-purple)]' 
+                : 'text-[var(--color-brand-navy)] hover:bg-slate-50 hover:text-[var(--color-brand-purple)]'
+            }`}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+      
+      <div class="pt-6 sm:hidden">
+        <Button href="/start-a-project/" class="w-full" variant="primary">Start a Project</Button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('mobile-menu-button');
+  const menu = document.getElementById('mobile-menu');
+  const iconOpen = document.querySelector('.menu-icon-open');
+  const iconClose = document.querySelector('.menu-icon-close');
+  
+  if (btn && menu && iconOpen && iconClose) {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      menu.classList.toggle('hidden');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+    });
+  }
+
+  // Accordion logic
+  const accordions = document.querySelectorAll('.mobile-accordion-btn');
+  accordions.forEach(acc => {
+    acc.addEventListener('click', () => {
+      const expanded = acc.getAttribute('aria-expanded') === 'true';
+      acc.setAttribute('aria-expanded', String(!expanded));
+      const target = document.getElementById(acc.getAttribute('aria-controls')!);
+      const icon = acc.querySelector('.accordion-icon');
+      
+      if (target && icon) {
+        target.classList.toggle('hidden');
+        if (expanded) {
+          (icon as HTMLElement).style.transform = 'rotate(0deg)';
+        } else {
+          (icon as HTMLElement).style.transform = 'rotate(180deg)';
+        }
+      }
+    });
+  });
+</script>
+
+
+

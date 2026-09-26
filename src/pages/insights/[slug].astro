@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Badge from '../../components/ui/Badge.astro';
+import ConceptualVisual from '../../components/ui/ConceptualVisual.astro';
+
+export async function getStaticPaths() {
+  const insights = await getCollection('insights');
+  return insights.map((insight: any) => ({
+    params: { slug: insight.slug },
+    props: { insight },
+  }));
+}
+
+const { insight } = Astro.props;
+const { Content } = await insight.render();
+const { title, date, author, category, summary, coverImage } = insight.data;
+---
+
+<MainLayout title={`${title} | Insights | SoftDows`} description={summary}>
+  <!-- EDITORIAL HEADER -->
+  <Section variant="light" size="large" class="pt-32 pb-24 md:pt-48 md:pb-32 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/30 via-transparent to-transparent pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+      <Badge variant="primary" class="mb-8">{category}</Badge>
+      <h1 class="mb-8 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[var(--color-brand-navy)] leading-[1.1]">
+        {title}
+      </h1>
+      <p class="mb-10 text-xl md:text-2xl font-light text-[var(--color-text-muted)] leading-relaxed max-w-3xl mx-auto">
+        {summary}
+      </p>
+      <div class="flex items-center justify-center gap-4 text-sm font-medium text-slate-500 uppercase tracking-widest border-t border-slate-200 pt-8 mt-4 max-w-sm mx-auto">
+        <span>{author}</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-purple)]"></span>
+        <span>{new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+      </div>
+    </div>
+  </Section>
+
+  <!-- EDITORIAL COVER -->
+  <div class="px-6 lg:px-8 max-w-5xl mx-auto -mt-16 md:-mt-24 relative z-20 mb-16 md:mb-24">
+    {coverImage ? (
+      <div class="rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white bg-slate-50 aspect-video">
+        <img 
+          src={typeof coverImage === 'string' ? coverImage : coverImage.src} 
+          alt={title} 
+          class="w-full h-full object-cover"
+        />
+      </div>
+    ) : (
+      <ConceptualVisual concept="editorial-cover" class="w-full h-full object-cover shadow-2xl border-[6px] border-white rounded-3xl" />
+    )}
+  </div>
+
+  <!-- ARTICLE CONTENT -->
+  <Section variant="default" size="narrow" class="py-0 md:py-0 pb-24 md:pb-32">
+    <article class="prose prose-lg md:prose-xl prose-slate max-w-none prose-headings:font-bold prose-headings:text-[var(--color-brand-navy)] prose-headings:tracking-tight prose-a:text-[var(--color-brand-purple)] prose-a:no-underline hover:prose-a:underline prose-img:rounded-2xl prose-img:shadow-lg first-letter:text-7xl first-letter:font-bold first-letter:text-[var(--color-brand-purple)] first-letter:mr-3 first-letter:float-left first-letter:leading-[0.8] prose-p:font-light prose-p:leading-relaxed">
+      <Content />
+    </article>
+  </Section>
+</MainLayout>
+
+
+

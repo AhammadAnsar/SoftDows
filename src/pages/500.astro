@@ -1,0 +1,35 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Button from '../components/ui/Button.astro';
+
+interface Props {
+  error: unknown;
+}
+
+const { error } = Astro.props;
+---
+
+<MainLayout title="Server Error | SoftDows" description="An unexpected error occurred.">
+  <Section variant="light" size="large" class="min-h-[70vh] flex items-center justify-center text-center">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-red-500 font-bold text-6xl md:text-8xl mb-6 tracking-tighter opacity-80">500</div>
+      <h1 class="text-3xl md:text-4xl font-bold text-[var(--color-brand-navy)] mb-6">System Error</h1>
+      <p class="text-lg text-[var(--color-text-muted)] mb-10 leading-relaxed">
+        An unexpected error occurred while processing your request. Our engineering team has been notified.
+      </p>
+      
+      {import.meta.env.DEV && error && (
+        <div class="bg-red-50 border border-red-100 rounded-lg p-6 mb-10 text-left overflow-auto max-h-64">
+          <p class="text-red-800 font-mono text-sm whitespace-pre-wrap">{error instanceof Error ? error.stack : String(error)}</p>
+        </div>
+      )}
+
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <Button href="/" variant="primary" class="px-8 py-3">Return Home</Button>
+        <Button href="/contact/" variant="outline" class="px-8 py-3">Contact Support</Button>
+      </div>
+    </div>
+  </Section>
+</MainLayout>
+

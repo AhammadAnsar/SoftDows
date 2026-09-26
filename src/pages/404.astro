@@ -1,0 +1,21 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Button from '../components/ui/Button.astro';
+---
+
+<MainLayout title="Page Not Found | SoftDows" description="The page you are looking for does not exist.">
+  <Section variant="light" size="large" class="min-h-[70vh] flex items-center justify-center text-center">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-[var(--color-brand-purple)] font-bold text-6xl md:text-8xl mb-6 tracking-tighter opacity-80">404</div>
+      <h1 class="text-3xl md:text-4xl font-bold text-[var(--color-brand-navy)] mb-6">Page not found</h1>
+      <p class="text-lg text-[var(--color-text-muted)] mb-10 leading-relaxed">
+        The page you are looking for doesn't exist or has been moved. Let's get you back on track.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <Button href="/" variant="primary" class="px-8 py-3">Return Home</Button>
+        <Button href="/contact/" variant="outline" class="px-8 py-3">Contact Support</Button>
+      </div>
+    </div>
+  </Section>
+</MainLayout>

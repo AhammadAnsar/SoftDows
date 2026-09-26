@@ -1,0 +1,154 @@
+---
+export const prerender = false;
+import MainLayout from '../layouts/MainLayout.astro';
+
+// If already authenticated, redirect away
+if (Astro.locals.user && Astro.locals.session) {
+  const role = (Astro.locals.user as any).role;
+  if (role === 'super_admin' || role === 'admin') {
+    return Astro.redirect('/admin');
+  }
+  return Astro.redirect('/portal');
+}
+---
+
+<MainLayout title="Sign In | SoftDows" description="Sign in to your SoftDows client portal or admin dashboard.">
+  <main class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- Subtle Background Element -->
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-gray-50 to-gray-50 opacity-50"></div>
+
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="flex justify-center">
+        <a href="/" class="text-2xl font-bold tracking-tight text-gray-900 hover:text-indigo-600 transition-colors">
+          SoftDows<span class="text-indigo-600">.</span>
+        </a>
+      </div>
+      <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        Sign in to your account
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Client Portal & Administrative Access
+      </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="bg-white py-8 px-4 shadow-xl shadow-gray-200/50 sm:rounded-2xl sm:px-10 border border-gray-100">
+        
+        <form id="login-form" class="space-y-6">
+          <div id="error-alert" class="hidden rounded-md bg-red-50 p-4 border border-red-100">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800" id="error-message">Invalid credentials</h3>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+            <div class="mt-2">
+              <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-2.5 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-shadow">
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between">
+              <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+              <div class="text-sm group relative">
+                <!-- Prepared for future password reset flow. Disabled until email provider is configured. -->
+                <span class="font-medium text-gray-400 cursor-not-allowed">Forgot password?</span>
+                <div class="pointer-events-none absolute bottom-full right-0 mb-2 w-56 rounded bg-gray-900 px-3 py-2 text-center text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-10 shadow-lg">
+                  Account recovery is currently handled through support. Please contact your administrator.
+                </div>
+              </div>
+            </div>
+            <div class="mt-2">
+              <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-2.5 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-shadow">
+            </div>
+          </div>
+
+          <div>
+            <button type="submit" id="submit-btn" class="flex w-full justify-center rounded-md bg-gray-900 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors disabled:opacity-70">
+              <span id="submit-text">Sign in</span>
+              <svg id="submit-spinner" class="hidden ml-2 h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <p class="mt-8 text-center text-xs text-gray-500">
+        Secured by SoftDows Identity.
+      </p>
+    </div>
+  </main>
+</MainLayout>
+
+<script>
+  import { signIn } from '../lib/auth/client';
+
+  const form = document.getElementById('login-form') as HTMLFormElement;
+  const errorAlert = document.getElementById('error-alert');
+  const errorMessage = document.getElementById('error-message');
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const submitText = document.getElementById('submit-text');
+  const submitSpinner = document.getElementById('submit-spinner');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Reset state
+    errorAlert?.classList.add('hidden');
+    submitBtn.disabled = true;
+    submitText?.classList.add('hidden');
+    submitSpinner?.classList.remove('hidden');
+
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const { data, error } = await signIn.email({
+        email,
+        password
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Invalid credentials. Please try again.');
+      }
+
+      // Success - Redirect based on role or to requested path
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get('redirectTo');
+      
+      if (redirectTo && redirectTo.startsWith('/')) {
+        window.location.href = redirectTo;
+      } else {
+        // We let the server redirect based on role by simply reloading to a protected route 
+        // or we check the user role from data
+        const role = data?.user?.role;
+        if (role === 'super_admin' || role === 'admin') {
+          window.location.href = '/admin';
+        } else {
+          window.location.href = '/portal';
+        }
+      }
+    } catch (err: any) {
+      if (errorMessage && errorAlert) {
+        errorMessage.textContent = err.message;
+        errorAlert.classList.remove('hidden');
+      }
+    } finally {
+      submitBtn.disabled = false;
+      submitText?.classList.remove('hidden');
+      submitSpinner?.classList.add('hidden');
+    }
+  });
+</script>
+

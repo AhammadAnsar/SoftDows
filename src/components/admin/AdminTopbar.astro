@@ -1,0 +1,125 @@
+---
+import type { User } from 'better-auth';
+import type { AppRole } from '../../lib/auth/permissions';
+import AdminIcon from './AdminIcon.astro';
+
+interface Props {
+  user: User & { role?: AppRole };
+}
+
+const { user } = Astro.props;
+
+// Format role for display
+const displayRole = user.role 
+  ? user.role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  : 'Staff';
+---
+
+<header class="h-16 bg-white border-b border-[#e2e8f0] flex items-center justify-between px-4 lg:px-8 z-30 sticky top-0">
+  
+  <div class="flex items-center gap-3 sm:gap-4">
+    <button 
+      class="js-sidebar-toggle lg:hidden p-2 -ml-2 text-[#64748b] hover:text-[#242a56] rounded-md focus:outline-none focus:ring-2 focus:ring-[#6878d6] transition-colors"
+      aria-label="Open sidebar"
+    >
+      <AdminIcon name="menu" />
+    </button>
+    
+    <!-- Mobile Brand (Visible only on mobile, hidden on lg when sidebar is visible) -->
+    <a href="/admin" class="lg:hidden flex items-center gap-2 font-bold text-[#242a56] text-lg tracking-tight">
+      <div class="w-7 h-7 bg-[#6878d6] rounded flex items-center justify-center text-white font-black text-sm shadow-sm">
+        S
+      </div>
+      <span>SoftDows</span>
+    </a>
+
+    <!-- Breadcrumbs / Page Title Context (Visible on desktop) -->
+    <div class="hidden lg:block">
+      <h1 class="text-lg font-bold text-[#242a56]" id="topbar-title">Dashboard</h1>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <!-- Account Menu -->
+    <div class="relative" id="account-menu-container">
+      <button 
+        id="account-menu-button"
+        class="flex items-center gap-2 sm:gap-3 p-1 rounded-full hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-[#6878d6] transition-colors"
+        aria-expanded="false"
+        aria-haspopup="true"
+      >
+        <div class="w-8 h-8 rounded-full bg-[#e2e8f0] border border-[#cbd5e1] flex items-center justify-center text-[#242a56] font-bold text-sm overflow-hidden shadow-sm">
+          {user.image ? <img src={user.image} alt={user.name} class="w-full h-full object-cover" /> : user.name.charAt(0).toUpperCase()}
+        </div>
+        <div class="hidden md:block text-left mr-1">
+          <p class="text-sm font-bold text-[#242a56] leading-none">{user.name}</p>
+          <p class="text-xs text-[#64748b] mt-1 font-medium leading-none">{displayRole}</p>
+        </div>
+        <AdminIcon name="chevron-down" class="hidden md:block w-4 h-4 text-[#94a3b8]" />
+      </button>
+
+      <!-- Dropdown -->
+      <div 
+        id="account-menu-dropdown"
+        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#e2e8f0] py-1 hidden transform origin-top-right transition-all opacity-0 scale-95"
+      >
+        <div class="px-4 py-3 border-b border-[#f1f5f9] md:hidden">
+          <p class="text-sm font-bold text-[#242a56]">{user.name}</p>
+          <p class="text-xs text-[#64748b] mt-0.5 truncate">{displayRole}</p>
+        </div>
+        
+        <form action="/api/auth/signout" method="POST" class="block w-full">
+          <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 font-medium">
+            <AdminIcon name="log-out" class="w-4 h-4" />
+            Sign out
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Script to update topbar title based on main h1 if it exists
+  document.addEventListener('DOMContentLoaded', () => {
+    const mainTitle = document.querySelector('main h1');
+    const topbarTitle = document.getElementById('topbar-title');
+    if (mainTitle && topbarTitle && mainTitle.textContent) {
+      topbarTitle.textContent = mainTitle.textContent;
+    }
+
+    // Account menu toggle
+    const container = document.getElementById('account-menu-container');
+    const button = document.getElementById('account-menu-button');
+    const dropdown = document.getElementById('account-menu-dropdown');
+    
+    let isMenuOpen = false;
+
+    function toggleMenu() {
+      isMenuOpen = !isMenuOpen;
+      button?.setAttribute('aria-expanded', String(isMenuOpen));
+      if (isMenuOpen) {
+        dropdown?.classList.remove('hidden');
+        // microtask delay for transition
+        setTimeout(() => {
+          dropdown?.classList.remove('opacity-0', 'scale-95');
+          dropdown?.classList.add('opacity-100', 'scale-100');
+        }, 10);
+      } else {
+        dropdown?.classList.remove('opacity-100', 'scale-100');
+        dropdown?.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => dropdown?.classList.add('hidden'), 150);
+      }
+    }
+
+    button?.addEventListener('click', toggleMenu);
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (isMenuOpen && container && !container.contains(e.target as Node)) {
+        toggleMenu();
+      }
+    });
+  });
+</script>
+

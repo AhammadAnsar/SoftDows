@@ -1,0 +1,1 @@
+ALTER TABLE `leads` ADD `converted_client_id` text REFERENCES clients(id);
