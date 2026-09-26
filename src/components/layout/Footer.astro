@@ -1,13 +1,32 @@
 ---
 import { getCollection } from 'astro:content';
-import { footerNav } from '../../config/navigation';
-import { siteConfig, contactConfig } from '../../config/site';
+import { footerNav as fallbackFooterNav } from '../../config/navigation';
+import { siteConfig, contactConfig as fallbackContactConfig } from '../../config/site';
 
-const allWork = await getCollection('work');
-const hasPublishedWork = allWork.filter(p => !p.data.isDraft).length > 0;
-const filteredCompanyNav = hasPublishedWork ? footerNav.company : footerNav.company.filter(item => item.href !== '/work/');
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../lib/db';
+import { getFooterNavigation, getGlobalSiteSettings } from '../../lib/cms/content';
 
-const currentYear = new Date().getFullYear();
+const db = getDb((env as any).DB);
+const [dbFooterNav, dbSettings] = await Promise.all([
+  getFooterNavigation(db).catch(() => null),
+  getGlobalSiteSettings(db).catch(() => ({} as Record<string, string>))
+]);
+
+const footerNav = dbFooterNav || fallbackFooterNav;
+
+const contactConfig = {
+  address: dbSettings['contact_address'] || fallbackContactConfig.address,
+  phone: dbSettings['contact_phone'] || fallbackContactConfig.phone,
+  email: dbSettings['contact_email'] || fallbackContactConfig.email,
+  social: fallbackContactConfig.social // Social could be merged too
+};
+
+const copyrightText = dbSettings['footer_copyright'] || `© ${new Date().getFullYear()} SoftDows. All rights reserved.`;
+
+const allWork = await getCollection('work').catch(() => []);
+const hasPublishedWork = allWork.filter((p: any) => !p.data.isDraft).length > 0;
+const filteredCompanyNav = hasPublishedWork ? footerNav.company : (footerNav.company || []).filter((item: any) => item.href !== '/work/');
 ---
 <footer class="bg-[var(--color-brand-navy)] text-white relative overflow-hidden pt-16 pb-8 md:pt-24 md:pb-12 mt-auto border-t border-slate-800">
   {/* Abstract geometric background */}
@@ -105,7 +124,7 @@ const currentYear = new Date().getFullYear();
     <!-- Copyright Area -->
     <div class="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
       <p class="text-sm text-[var(--color-brand-light)] opacity-60 text-center md:text-left">
-        &copy; {currentYear} {siteConfig.name}. All rights reserved.
+        {copyrightText}
       </p>
       
       <!-- Only mapping configured socials if available in future -->

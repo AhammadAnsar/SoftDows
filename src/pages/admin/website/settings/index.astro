@@ -1,0 +1,193 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../../lib/db';
+import { siteSettings } from '../../../../lib/db/schema/cms';
+import { inArray } from 'drizzle-orm';
+import AdminIcon from '../../../../components/admin/AdminIcon.astro';
+import { requirePermission } from '../../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+if (!requirePermission(user.role as any, 'settings', 'read')) {
+  return Astro.redirect('/admin/access-denied');
+}
+
+const db = getDb((env as any).DB);
+
+const validKeys = ['site_title', 'seo_description', 'contact_email', 'contact_phone', 'footer_copyright'];
+let currentSettings: Record<string, string> = {};
+
+try {
+  const settingsRows = await db
+    .select()
+    .from(siteSettings)
+    .where(inArray(siteSettings.key, validKeys));
+
+  currentSettings = settingsRows.reduce((acc, row) => {
+    acc[row.key] = row.value;
+    return acc;
+  }, {} as Record<string, string>);
+} catch (e) {
+  console.error("Error fetching site settings:", e);
+}
+
+const getSetting = (key: string) => currentSettings[key] || '';
+---
+
+<AdminLayout title="Global Site Settings" user={user}>
+  <div class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+    
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-[#242a56]">Global Site Settings</h1>
+      <p class="mt-1 text-sm text-[#64748b]">Manage core settings and general information for the website.</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+      <form id="settingsForm" class="p-6 sm:p-8">
+        
+        <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg text-sm font-medium"></div>
+
+        <div class="space-y-8">
+          
+          <!-- General Details -->
+          <div>
+            <h2 class="text-base font-bold text-[#242a56] mb-4 border-b border-slate-100 pb-2">General Info</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="md:col-span-2">
+                <label for="site_title" class="block text-sm font-bold text-[#242a56] mb-1.5">Site Title</label>
+                <input 
+                  type="text" 
+                  id="site_title" 
+                  name="site_title" 
+                  value={getSetting('site_title')}
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white"
+                />
+                <p class="mt-1 text-xs text-[#64748b]">The main title of the website, used in browser tabs and headers.</p>
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="seo_description" class="block text-sm font-bold text-[#242a56] mb-1.5">SEO Description</label>
+                <textarea 
+                  id="seo_description" 
+                  name="seo_description" 
+                  rows="3"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white resize-none"
+                >{getSetting('seo_description')}</textarea>
+                <p class="mt-1 text-xs text-[#64748b]">Global default description for search engines.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Details -->
+          <div>
+            <h2 class="text-base font-bold text-[#242a56] mb-4 border-b border-slate-100 pb-2">Contact Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="contact_email" class="block text-sm font-bold text-[#242a56] mb-1.5">Contact Email</label>
+                <input 
+                  type="email" 
+                  id="contact_email" 
+                  name="contact_email" 
+                  value={getSetting('contact_email')}
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white"
+                />
+              </div>
+
+              <div>
+                <label for="contact_phone" class="block text-sm font-bold text-[#242a56] mb-1.5">Contact Phone</label>
+                <input 
+                  type="text" 
+                  id="contact_phone" 
+                  name="contact_phone" 
+                  value={getSetting('contact_phone')}
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <!-- Footer Details -->
+          <div>
+            <h2 class="text-base font-bold text-[#242a56] mb-4 border-b border-slate-100 pb-2">Footer</h2>
+            <div class="grid grid-cols-1 gap-6">
+              <div>
+                <label for="footer_copyright" class="block text-sm font-bold text-[#242a56] mb-1.5">Footer Copyright Text</label>
+                <input 
+                  type="text" 
+                  id="footer_copyright" 
+                  name="footer_copyright" 
+                  value={getSetting('footer_copyright')}
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white"
+                />
+                <p class="mt-1 text-xs text-[#64748b]">e.g. © 2026 SoftDows. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+          <button type="submit" id="saveButton" class="px-6 py-2 bg-[#6878d6] hover:bg-[#5a68c0] text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6878d6] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <AdminIcon name="save" class="w-4 h-4" />
+            <span>Save Settings</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('settingsForm') as HTMLFormElement;
+  const statusMessage = document.getElementById('statusMessage');
+  const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
+  const saveButtonText = saveButton?.querySelector('span');
+
+  if (form && statusMessage && saveButton && saveButtonText) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      statusMessage.classList.add('hidden');
+      saveButton.disabled = true;
+      saveButtonText.textContent = 'Saving...';
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('/api/admin/website/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          statusMessage.textContent = 'Settings updated successfully.';
+          statusMessage.className = 'mb-6 p-4 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200 block';
+        } else {
+          const error = await response.json();
+          statusMessage.textContent = (error as any).error || 'Failed to update settings.';
+          statusMessage.className = 'mb-6 p-4 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 block';
+        }
+      } catch (err) {
+        console.error('Error updating settings:', err);
+        statusMessage.textContent = 'A network error occurred.';
+        statusMessage.className = 'mb-6 p-4 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 block';
+      } finally {
+        saveButton.disabled = false;
+        saveButtonText.textContent = 'Save Settings';
+        
+        // Auto-hide success message after 3 seconds
+        if (statusMessage.classList.contains('bg-green-50')) {
+          setTimeout(() => {
+            statusMessage.classList.add('hidden');
+          }, 3000);
+        }
+      }
+    });
+  }
+</script>

@@ -1,0 +1,92 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+import { projects } from '../../../lib/db/schema/agency'; import { clients } from '../../../lib/db/schema/crm'; import { user } from '../../../lib/db/schema/auth';
+import { getAuth } from '../../../lib/auth';
+import { env } from 'cloudflare:workers';
+import { crypto } from '@cloudflare/workers-types'; // Or standard web crypto
+import { eq } from 'drizzle-orm';
+import { requirePermission } from '../../../lib/auth/authorization';
+
+const _env = env as any;
+const auth = getAuth(_env);
+const session = await auth.api.getSession({ headers: Astro.request.headers });
+if (!session) return Astro.redirect('/login');
+requirePermission(session.user.role as any, 'projects', 'create');
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+    const name = data.get('name')?.toString();
+    const clientId = data.get('clientId')?.toString();
+    const status = data.get('status')?.toString() || 'planning';
+    
+    if (!name || !clientId) {
+      error = 'Name and Client are required.';
+    } else {
+      // Validate client
+      const db = getDb((env as any).DB);
+const clientCheck = await db.select().from(clients).where(eq(clients.id, clientId)).limit(1);
+      if (!clientCheck.length) {
+         error = 'Invalid client selected.';
+      } else {
+         const newId = crypto.randomUUID();
+         await db.insert(projects).values({
+           id: newId,
+           name,
+           clientId,
+           projectCode: data.get('projectCode')?.toString() || null,
+           description: data.get('description')?.toString() || null,
+           status: status as any,
+           priority: (data.get('priority')?.toString() || 'medium') as any,
+           budget: parseInt(data.get('budget')?.toString() || '0') * 100, // minor units
+         });
+         return Astro.redirect(`/admin/projects/${newId}`);
+      }
+    }
+  } catch (err: any) {
+    error = err.message || 'Error creating project';
+  }
+}
+
+const db = getDb((env as any).DB);
+const allClients = await db.select({ id: clients.id, name: clients.name }).from(clients);
+---
+<AdminLayout title="New Project" user={session.user as any}>
+  <div class="p-6 max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">New Project</h1>
+    {error && <div class="mb-4 p-4 bg-red-50 text-red-600 rounded">{error}</div>}
+    
+    <form method="POST" class="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+      <div>
+        <label class="block text-sm font-bold mb-1">Project Name *</label>
+        <input type="text" name="name" required class="w-full px-3 py-2 border rounded" />
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-1">Client *</label>
+        <select name="clientId" required class="w-full px-3 py-2 border rounded">
+          {allClients.map((c: any) => <option value={c.id}>{c.name}</option>)}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold mb-1">Project Code</label>
+          <input type="text" name="projectCode" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1">Status</label>
+          <select name="status" class="w-full px-3 py-2 border rounded">
+            <option value="planning">Planning</option>
+            <option value="active">Active</option>
+            <option value="on_hold">On Hold</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <button type="submit" class="px-4 py-2 bg-[#242a56] text-white rounded mt-4">Create Project</button>
+      </div>
+    </form>
+  </div>
+</AdminLayout>

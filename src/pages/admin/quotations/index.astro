@@ -1,0 +1,45 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+import { quotations } from '../../../lib/db/schema/billing';
+import { clients } from '../../../lib/db/schema/crm';
+import { getAuth } from '../../../lib/auth';
+import { env } from 'cloudflare:workers';
+import { eq, desc } from 'drizzle-orm';
+import { requirePermission } from '../../../lib/auth/authorization';
+
+const _env = env as any;
+const auth = getAuth(_env);
+const session = await auth.api.getSession({ headers: Astro.request.headers });
+if (!session) return Astro.redirect('/login');
+requirePermission(session.user.role as any, 'quotations', 'read');
+
+const db = getDb(_env.DB);
+const items = await db.select({
+  id: quotations.id,
+  num: quotations.quotationNumber,
+  status: quotations.status,
+  total: quotations.total,
+  clientName: clients.name
+}).from(quotations).leftJoin(clients, eq(quotations.clientId, clients.id)).orderBy(desc(quotations.createdAt));
+---
+<AdminLayout title="Quotations" user={session.user as any}>
+  <div class="p-6 max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Quotations</h1>
+    <div class="bg-white rounded border overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 border-b">
+          <tr><th>Number</th><th>Client</th><th>Total</th><th>Status</th></tr>
+        </thead>
+        <tbody class="divide-y">
+          {items.map((i: any) => (
+            <tr>
+              <td class="p-4">{i.num}</td><td class="p-4">{i.clientName}</td>
+              <td class="p-4">{(i.total / 100).toFixed(2)}</td><td class="p-4">{i.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminLayout>

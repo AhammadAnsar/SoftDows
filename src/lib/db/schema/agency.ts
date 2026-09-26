@@ -1,6 +1,6 @@
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+﻿import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { id, timestamps, archive } from './utils';
-import { clients } from './crm';
+import { clients, leads } from './crm';
 import { user } from './auth';
 
 export const services = sqliteTable('services', {
@@ -18,19 +18,35 @@ export const services = sqliteTable('services', {
 
 export const projects = sqliteTable('projects', {
   id: id(),
+  projectCode: text('project_code').unique(),
   clientId: text('client_id').notNull().references(() => clients.id, { onDelete: 'restrict' }),
+  leadId: text('lead_id').references(() => leads.id, { onDelete: 'set null' }),
   name: text('name').notNull(),
   description: text('description'),
-  status: text('status', { enum: ['planned', 'active', 'on_hold', 'completed', 'cancelled'] }).notNull().default('planned'),
+  status: text('status', { enum: ['planning', 'active', 'on_hold', 'completed', 'cancelled'] }).notNull().default('planning'),
+  priority: text('priority', { enum: ['low', 'medium', 'high', 'urgent'] }).notNull().default('medium'),
   startDate: integer('start_date', { mode: 'timestamp' }), // Business Date
   targetCompletionDate: integer('target_completion_date', { mode: 'timestamp' }), // Business Date
   completionDate: integer('completion_date', { mode: 'timestamp' }), // Business Date
   progressPercentage: integer('progress_percentage').notNull().default(0),
+  projectManagerId: text('project_manager_id').references(() => user.id, { onDelete: 'set null' }),
+  budget: integer('budget').notNull().default(0), // Minor units
+  currency: text('currency').notNull().default('USD'),
   internalNotes: text('internal_notes'),
   clientVisibleSummary: text('client_visible_summary'),
   ...timestamps,
   ...archive
 });
+
+export const projectMembers = sqliteTable('project_members', {
+  id: id(),
+  projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  role: text('role').notNull().default('member'),
+  ...timestamps
+}, (t) => ({
+  unq: uniqueIndex('unq_project_member').on(t.projectId, t.userId)
+}));
 
 export const projectServices = sqliteTable('project_services', {
   id: id(),
@@ -46,9 +62,12 @@ export const projectMilestones = sqliteTable('project_milestones', {
   title: text('title').notNull(),
   description: text('description'),
   status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] }).notNull().default('pending'),
+  progressPercentage: integer('progress_percentage').notNull().default(0),
   displayOrder: integer('display_order').notNull().default(0),
   targetDate: integer('target_date', { mode: 'timestamp' }),
   completionDate: integer('completion_date', { mode: 'timestamp' }),
+  internalNote: text('internal_note'),
+  clientVisibleNote: text('client_visible_note'),
   isVisibleToClient: integer('is_visible_to_client', { mode: 'boolean' }).notNull().default(true),
   ...timestamps
 });

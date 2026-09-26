@@ -1,0 +1,48 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+import { invoices } from '../../../lib/db/schema/billing';
+import { clients } from '../../../lib/db/schema/crm';
+import { getAuth } from '../../../lib/auth';
+import { env } from 'cloudflare:workers';
+import { eq, desc } from 'drizzle-orm';
+import { requirePermission } from '../../../lib/auth/authorization';
+
+const _env = env as any;
+const auth = getAuth(_env);
+const session = await auth.api.getSession({ headers: Astro.request.headers });
+if (!session) return Astro.redirect('/login');
+requirePermission(session.user.role as any, 'invoices', 'read');
+
+const db = getDb(_env.DB);
+const items = await db.select({
+  id: invoices.id,
+  num: invoices.invoiceNumber,
+  status: invoices.status,
+  total: invoices.total,
+  due: invoices.balanceDue,
+  clientName: clients.name
+}).from(invoices).leftJoin(clients, eq(invoices.clientId, clients.id)).orderBy(desc(invoices.createdAt));
+---
+<AdminLayout title="Invoices" user={session.user as any}>
+  <div class="p-6 max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Invoices</h1>
+    <div class="bg-white rounded border overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 border-b">
+          <tr><th>Number</th><th>Client</th><th>Total</th><th>Due</th><th>Status</th></tr>
+        </thead>
+        <tbody class="divide-y">
+          {items.map((i: any) => (
+            <tr>
+              <td class="p-4">{i.num}</td><td class="p-4">{i.clientName}</td>
+              <td class="p-4">{(i.total / 100).toFixed(2)}</td>
+              <td class="p-4">{(i.due / 100).toFixed(2)}</td>
+              <td class="p-4">{i.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminLayout>

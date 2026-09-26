@@ -1,17 +1,19 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+﻿import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { id, timestamps, money } from './utils';
-import { clients } from './crm';
+import { clients, leads } from './crm';
 import { projects } from './agency';
+import { user } from './auth';
 
 export const quotations = sqliteTable('quotations', {
   id: id(),
   quotationNumber: text('quotation_number').notNull().unique(), // Human-readable e.g., Q-2026-001
   clientId: text('client_id').notNull().references(() => clients.id, { onDelete: 'restrict' }),
+  leadId: text('lead_id').references(() => leads.id, { onDelete: 'set null' }),
   projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
   currency: text('currency').notNull().default('USD'), // E.g., 'USD', 'BDT'
   issueDate: integer('issue_date', { mode: 'timestamp' }).notNull(), // Business Date
   expiryDate: integer('expiry_date', { mode: 'timestamp' }), // Business Date
-  status: text('status', { enum: ['draft', 'issued', 'accepted', 'declined', 'expired', 'cancelled'] }).notNull().default('draft'),
+  status: text('status', { enum: ['draft', 'sent', 'accepted', 'rejected', 'expired', 'cancelled'] }).notNull().default('draft'),
   subtotal: money('subtotal').notNull().default(0), // Minor units
   discount: money('discount').notNull().default(0), // Minor units
   tax: money('tax').notNull().default(0), // Minor units
@@ -25,7 +27,7 @@ export const quotationItems = sqliteTable('quotation_items', {
   id: id(),
   quotationId: text('quotation_id').notNull().references(() => quotations.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
-  quantity: real('quantity').notNull().default(1), // Changed to REAL to support 1.5 hours
+  quantity: real('quantity').notNull().default(1),
   unitPrice: money('unit_price').notNull().default(0),
   lineTotal: money('line_total').notNull().default(0),
   displayOrder: integer('display_order').notNull().default(0),
@@ -37,6 +39,7 @@ export const invoices = sqliteTable('invoices', {
   invoiceNumber: text('invoice_number').notNull().unique(), // Human-readable e.g., INV-2026-001
   clientId: text('client_id').notNull().references(() => clients.id, { onDelete: 'restrict' }),
   projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
+  quotationId: text('quotation_id').references(() => quotations.id, { onDelete: 'set null' }),
   currency: text('currency').notNull().default('USD'),
   issueDate: integer('issue_date', { mode: 'timestamp' }).notNull(),
   dueDate: integer('due_date', { mode: 'timestamp' }).notNull(),
@@ -65,6 +68,7 @@ export const invoiceItems = sqliteTable('invoice_items', {
 export const payments = sqliteTable('payments', {
   id: id(),
   invoiceId: text('invoice_id').notNull().references(() => invoices.id, { onDelete: 'restrict' }),
+  clientId: text('client_id').notNull().references(() => clients.id, { onDelete: 'restrict' }),
   amount: money('amount').notNull().default(0),
   currency: text('currency').notNull().default('USD'),
   paymentDate: integer('payment_date', { mode: 'timestamp' }).notNull(),
@@ -72,5 +76,6 @@ export const payments = sqliteTable('payments', {
   reference: text('reference'), // Transaction ID or receipt number
   notes: text('notes'),
   status: text('status', { enum: ['pending', 'completed', 'failed', 'refunded'] }).notNull().default('completed'),
+  recordedById: text('recorded_by_id').references(() => user.id, { onDelete: 'set null' }),
   ...timestamps
 });

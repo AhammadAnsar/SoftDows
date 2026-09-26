@@ -140,9 +140,13 @@ export const teamMembers = sqliteTable('team_members', {
 
 export const navigationItems = sqliteTable('navigation_items', {
   id: id(),
-  menuLocation: text('menu_location').notNull(), // e.g. 'header', 'footer'
+  groupKey: text('group_key').notNull(), // e.g. 'header', 'footer'
   label: text('label').notNull(),
-  href: text('href').notNull(),
+  entityType: text('entity_type'), // e.g., 'service', 'product', 'venture', 'page'
+  entityId: text('entity_id'), // Reference to the canonical entity
+  customUrl: text('custom_url'), // Fallback if no entity is used
+  shortDescription: text('short_description'), // For mega menus
+  iconKey: text('icon_key'), // For mega menus
   displayOrder: integer('display_order').notNull().default(0),
   parentId: text('parent_id'), // For nested menus
   isEnabled: integer('is_enabled', { mode: 'boolean' }).notNull().default(true),
