@@ -12,6 +12,7 @@ export function getAuth(env: any) {
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
+    trustedOrigins: ['https://softdows.ansarahammad369.workers.dev', 'https://softdows.com'],
     database: drizzleAdapter(db, {
       provider: 'sqlite',
       schema: {
