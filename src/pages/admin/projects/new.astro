@@ -4,7 +4,7 @@ import { getDb } from '../../../lib/db';
 import { projects } from '../../../lib/db/schema/agency'; import { clients } from '../../../lib/db/schema/crm'; import { user } from '../../../lib/db/schema/auth';
 import { getAuth } from '../../../lib/auth';
 import { env } from 'cloudflare:workers';
-import { crypto } from '@cloudflare/workers-types'; // Or standard web crypto
+ // Or standard web crypto
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '../../../lib/auth/authorization';
 
