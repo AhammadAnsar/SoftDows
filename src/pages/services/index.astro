@@ -1,80 +1,40 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import Section from '../../components/ui/Section.astro';
-import Button from '../../components/ui/Button.astro';
-import Badge from '../../components/ui/Badge.astro';
-import ConceptualVisual from '../../components/ui/ConceptualVisual.astro';
-import { servicesData } from '../../config/services';
-import { servicesOverviewContent } from '../../lib/content/services-overview';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../lib/db';
+import { services } from '../../lib/db/schema/agency';
+import { eq, asc } from 'drizzle-orm';
 
-const c = servicesOverviewContent;
+export const prerender = false;
+
+const db = getDb((env as any).DB);
+const allServices = await db.select().from(services)
+  .where(eq(services.isVisible, true))
+  .orderBy(asc(services.displayOrder))
+  .all();
 ---
-
-<MainLayout title={c.seo.title} description={c.seo.description}>
-  <!-- 1. HERO SECTION -->
-  <Section variant="light" size="large" class="pt-24 pb-20 md:pt-32 md:pb-28 text-center">
-    <div class="max-w-4xl mx-auto">
-      <Badge variant="primary" class="mb-6">{c.hero.eyebrow}</Badge>
-      <h1 class="mb-8 text-4xl sm:text-5xl lg:text-6xl text-[var(--color-brand-navy)] font-bold tracking-tight leading-tight">
-        {c.hero.heading}
-      </h1>
-      <p class="text-xl sm:text-2xl text-[var(--color-text-muted)] leading-relaxed max-w-3xl mx-auto">
-        {c.hero.description}
-      </p>
+<MainLayout title="Our Services" description="SoftDows digital services">
+  <Section variant="light" size="large" class="pt-32 pb-24">
+    <div class="max-w-7xl mx-auto text-center">
+      <h1 class="text-4xl md:text-6xl font-bold text-[var(--color-brand-navy)] mb-6">Our Services</h1>
+      <p class="text-xl text-slate-600 max-w-2xl mx-auto">Comprehensive digital engineering solutions.</p>
     </div>
   </Section>
 
-  <!-- 2. ALL SERVICES GRID (Editorial style) -->
-  <Section variant="default" size="normal" class="border-t border-slate-100 py-24">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 lg:gap-x-24 gap-y-24 max-w-7xl mx-auto">
-      {servicesData.map((service: any, index: number) => (
-        <a href={service.href} class={`group flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-8 focus-visible:ring-[var(--color-brand-purple)] rounded-lg ${index % 2 !== 0 ? 'md:mt-32' : 'md:mb-32'}`}>
-          
-          {/* Large Image Placeholder */}
-          <div class="w-full aspect-[4/3] rounded-3xl bg-slate-50 mb-8 overflow-hidden relative group-hover:shadow-xl transition-all duration-500 transform group-hover:-translate-y-2">
-             <ConceptualVisual 
-               concept={
-                 service.id === 'website-design-development' ? 'website-design' :
-                 service.id === 'custom-software-web-applications' ? 'custom-software' :
-                 service.id === 'ecommerce-development' ? 'ecommerce' :
-                 service.id === 'ui-ux-design' ? 'ui-ux' :
-                 service.id === 'seo-digital-visibility' ? 'seo' :
-                 'maintenance'
-               } 
-               class="w-full h-full" 
-             />
-          </div>
-          
-          <div class="flex items-center gap-4 mb-4">
-             <span class="text-sm font-bold text-[var(--color-brand-purple)] tracking-widest font-mono">0{index + 1}</span>
-             <h2 class="text-3xl md:text-4xl font-bold text-[var(--color-brand-navy)] group-hover:text-[var(--color-brand-purple)] transition-colors tracking-tight leading-tight">{service.title}</h2>
-          </div>
-          
-          <p class="text-[var(--color-text-muted)] text-lg leading-relaxed mb-8 md:pl-10">
-            {service.shortDescription}
-          </p>
-          
-          <div class="mt-auto flex items-center text-[var(--color-brand-purple)] font-semibold w-fit transition-all md:pl-10 text-lg">
-            Explore capability <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-3 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-          </div>
-        </a>
-      ))}
-    </div>
-  </Section>
-
-  <!-- 3. APPROACH / CTA -->
-  <Section variant="alternate" size="normal" class="bg-slate-50 border-t border-slate-100">
-    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10 bg-white p-10 md:p-14 rounded-3xl border border-slate-200 shadow-sm">
-      <div class="md:w-2/3 text-center md:text-left">
-        <h2 class="text-2xl md:text-3xl font-bold text-[var(--color-brand-navy)] mb-4">{c.approach.heading}</h2>
-        <p class="text-[var(--color-text-muted)] leading-relaxed text-lg">
-          {c.approach.description}
-        </p>
-      </div>
-      <div class="md:w-1/3 flex justify-center md:justify-end shrink-0">
-        <Button href={c.approach.cta.url} variant="primary" size="large" class="w-full sm:w-auto px-8">{c.approach.cta.label}</Button>
+  <Section variant="default" size="large">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-8">
+        {allServices.map(service => (
+          <a href={`/services/${service.slug}/`} class="group block p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+            <h3 class="text-2xl font-bold text-[var(--color-brand-navy)] mb-4">{service.name}</h3>
+            <p class="text-slate-600 leading-relaxed mb-6 flex-grow">{service.shortDescription}</p>
+            <div class="text-[var(--color-brand-purple)] font-medium inline-flex items-center gap-2 group-hover:gap-3 transition-all">
+              Learn more <span aria-hidden="true">&rarr;</span>
+            </div>
+          </a>
+        ))}
       </div>
     </div>
   </Section>
 </MainLayout>
-

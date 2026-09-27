@@ -1,47 +1,37 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import Section from '../../components/ui/Section.astro';
-import Badge from '../../components/ui/Badge.astro';
-import ConceptualVisual from '../../components/ui/ConceptualVisual.astro';
-import { getPublishedProducts } from '../../lib/content/products';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../lib/db';
+import { softwareProducts } from '../../lib/db/schema/cms';
+import { eq, asc } from 'drizzle-orm';
 
-const publishedProducts = getPublishedProducts();
+export const prerender = false;
+
+const db = getDb((env as any).DB);
+const allProducts = await db.select().from(softwareProducts)
+  .where(eq(softwareProducts.isVisible, true))
+  .orderBy(asc(softwareProducts.displayOrder))
+  .all();
 ---
-<MainLayout title="Software Products | SoftDows" description="Proprietary software platforms engineered by SoftDows.">
-  <Section variant="light" size="large" class="pt-28 pb-16 md:pt-40 md:pb-24 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[var(--color-brand-purple)]/5 via-transparent to-transparent opacity-70"></div>
-    <div class="max-w-4xl mx-auto text-center relative z-10">
-      <Badge variant="primary" class="mb-6">Our Engineering</Badge>
-      <h1 class="mb-8 text-5xl md:text-6xl text-[var(--color-brand-navy)] font-bold tracking-tight leading-[1.05]">
-        Software Products
-      </h1>
-      <p class="text-xl md:text-2xl font-light text-[var(--color-text-muted)] leading-relaxed">
-        We build proprietary software platforms providing structured solutions for administration, learning, and professional discovery.
-      </p>
+<MainLayout title="Software Products" description="SoftDows software products">
+  <Section variant="light" size="large" class="pt-32 pb-24">
+    <div class="max-w-7xl mx-auto text-center">
+      <h1 class="text-4xl md:text-6xl font-bold text-[var(--color-brand-navy)] mb-6">Software Products</h1>
     </div>
   </Section>
 
-  {publishedProducts.length > 0 && (
-    <Section variant="default" size="normal">
-      <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {publishedProducts.map(product => (
-          <a href={`/products/${product.slug}/`} class="group flex flex-col h-full border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 bg-white hover:-translate-y-1">
-            <div class="h-48 bg-slate-50 relative overflow-hidden border-b border-slate-100">
-              <ConceptualVisual concept={product.slug === 'biddalok' ? 'collaboration' : product.slug === 'mymosque' ? 'case-study' : 'custom-software'} class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105 transform" />
-            </div>
-            <div class="p-8 flex flex-col grow">
-              <Badge variant="primary" class="mb-4 self-start">Software</Badge>
-              <h3 class="text-2xl font-bold text-[var(--color-brand-navy)] mb-3 group-hover:text-[var(--color-brand-purple)] transition-colors">{product.name}</h3>
-              <p class="text-[var(--color-text-muted)] mb-6 leading-relaxed grow">{product.shortDescription}</p>
-              <span class="font-semibold text-[var(--color-brand-purple)] flex items-center gap-1 group-hover:gap-2 transition-all">
-                Explore Platform <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-              </span>
-            </div>
+  <Section variant="default" size="large">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {allProducts.map(p => (
+          <a href={`/products/${p.slug}/`} class="group block p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
+            <h3 class="text-2xl font-bold text-[var(--color-brand-navy)] mb-4">{p.name}</h3>
+            <p class="text-slate-600 mb-6 flex-grow">{p.shortDescription}</p>
+            <div class="text-[var(--color-brand-purple)] font-medium">Learn more &rarr;</div>
           </a>
         ))}
-        </div>
       </div>
-    </Section>
-  )}
+    </div>
+  </Section>
 </MainLayout>

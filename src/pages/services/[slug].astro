@@ -1,0 +1,70 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Badge from '../../components/ui/Badge.astro';
+import Button from '../../components/ui/Button.astro';
+import ConceptualVisual from '../../components/ui/ConceptualVisual.astro';
+
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../lib/db';
+import { services } from '../../lib/db/schema/agency';
+import { eq, and } from 'drizzle-orm';
+
+export const prerender = false;
+
+const db = getDb((env as any).DB);
+const slug = Astro.params.slug as string;
+
+const service = await db.select().from(services)
+  .where(and(eq(services.slug, slug), eq(services.isVisible, true)))
+  .get();
+
+if (!service) {
+  return Astro.redirect('/404');
+}
+
+const caps = typeof service.capabilities === 'string' ? JSON.parse(service.capabilities) : service.capabilities;
+---
+<MainLayout title={service.seoTitle || service.name} description={service.seoDescription || service.shortDescription || undefined}>
+  <Section variant="light" size="large" class="pt-28 pb-16 md:pt-40 md:pb-24 bg-slate-50 border-b border-slate-100">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+      <div class="w-full lg:w-1/2">
+        <div class="flex flex-wrap items-center gap-4 mb-6">
+          <Badge variant="primary">Service</Badge>
+          <Badge variant="outline">{service.category}</Badge>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-brand-navy)] leading-[1.1] mb-6">
+          {service.heroHeading || service.name}
+        </h1>
+        <p class="text-lg text-slate-600 mb-8 max-w-xl leading-relaxed">
+          {service.heroCopy || service.shortDescription}
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <Button href="/start-a-project/" variant="primary" size="large">Start a Project</Button>
+          <Button href="/contact/" variant="outline" size="large">Contact Us</Button>
+        </div>
+      </div>
+      <div class="w-full lg:w-1/2 h-[400px] md:h-[500px]">
+        <ConceptualVisual concept="custom-software" class="w-full h-full rounded-2xl" />
+      </div>
+    </div>
+  </Section>
+
+  {caps?.items?.length > 0 && (
+    <Section variant="default" size="large">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-3xl mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-[var(--color-brand-navy)] mb-6">{caps.heading || 'Capabilities'}</h2>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {caps.items.map((item: any) => (
+            <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 h-full">
+              <h3 class="text-xl font-bold text-[var(--color-brand-navy)] mb-4">{item.title}</h3>
+              <p class="text-slate-600 leading-relaxed">{item.desc || item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  )}
+</MainLayout>

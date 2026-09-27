@@ -133,6 +133,26 @@ export const teamMembers = sqliteTable('team_members', {
   displayOrder: integer('display_order').notNull().default(0),
   status: text('status', { enum: ['active', 'inactive'] }).notNull().default('active'),
   userId: text('user_id').references(() => user.id, { onDelete: 'set null' }), // Staff user identity
+  slug: text('slug').notNull().unique(),
+  displayName: text('display_name'),
+  shortBio: text('short_bio'),
+  fullBio: text('full_bio'),
+  monogramFallback: text('monogram_fallback'),
+  expertise: text('expertise', { mode: 'json' }),
+  skills: text('skills', { mode: 'json' }),
+  experience: text('experience', { mode: 'json' }),
+  education: text('education', { mode: 'json' }),
+  certifications: text('certifications', { mode: 'json' }),
+  languages: text('languages', { mode: 'json' }),
+  email: text('email'),
+  phone: text('phone'),
+  website: text('website'),
+  linkedin: text('linkedin'),
+  github: text('github'),
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+  isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(false),
+  seoTitle: text('seo_title'),
+  seoDescription: text('seo_description'),
   ...timestamps
 });
 
@@ -161,3 +181,59 @@ export const faqs = sqliteTable('faqs', {
   status: text('status', { enum: ['published', 'draft'] }).notNull().default('draft'),
   ...timestamps
 });
+
+export const softwareProducts = sqliteTable('software_products', {
+  id: id(),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  shortName: text('short_name'),
+  tagline: text('tagline'),
+  shortDescription: text('short_description'),
+  fullDescription: text('full_description'),
+  status: text('status', { enum: ['active', 'beta', 'upcoming', 'retired', 'hidden'] }).notNull().default('active'),
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+  isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(false),
+  displayOrder: integer('display_order').notNull().default(0),
+  logoKey: text('logo_key'),
+  heroMediaKey: text('hero_media_key'),
+  targetAudience: text('target_audience'),
+  problem: text('problem'),
+  capabilities: text('capabilities', { mode: 'json' }),
+  keyBenefits: text('key_benefits', { mode: 'json' }),
+  workflow: text('workflow', { mode: 'json' }),
+  primaryCta: text('primary_cta', { mode: 'json' }),
+  secondaryCta: text('secondary_cta', { mode: 'json' }),
+  externalUrl: text('external_url'),
+  demoUrl: text('demo_url'),
+  documentationUrl: text('documentation_url'),
+  pricingData: text('pricing_data', { mode: 'json' }),
+  seoTitle: text('seo_title'),
+  seoDescription: text('seo_description'),
+  ogImage: text('og_image'),
+  ...timestamps
+});
+
+export const ventures = sqliteTable('ventures', {
+  id: id(),
+  slug: text('slug').notNull().unique(),
+  brandName: text('brand_name').notNull(),
+  localName: text('local_name'),
+  category: text('category'),
+  shortDescription: text('short_description'),
+  fullDescription: text('full_description'),
+  status: text('status', { enum: ['active', 'upcoming', 'hidden'] }).notNull().default('active'),
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+  isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(false),
+  displayOrder: integer('display_order').notNull().default(0),
+  logoKey: text('logo_key'),
+  coverVisualKey: text('cover_visual_key'),
+  externalUrl: text('external_url'),
+  audience: text('audience'),
+  softdowsRole: text('softdows_role'),
+  keyFocus: text('key_focus', { mode: 'json' }),
+  seoTitle: text('seo_title'),
+  seoDescription: text('seo_description'),
+  ogImage: text('og_image'),
+  ...timestamps
+});
+

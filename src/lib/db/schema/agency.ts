@@ -1,4 +1,4 @@
-﻿import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { id, timestamps, archive } from './utils';
 import { clients, leads } from './crm';
 import { user } from './auth';
@@ -13,6 +13,22 @@ export const services = sqliteTable('services', {
   seoTitle: text('seo_title'),
   seoDescription: text('seo_description'),
   isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(false),
+  shortName: text('short_name'),
+  category: text('category').default('digital'),
+  tagline: text('tagline'),
+  fullDescription: text('full_description'),
+  heroHeading: text('hero_heading'),
+  heroCopy: text('hero_copy'),
+  iconKey: text('icon_key'),
+  visualKey: text('visual_key'),
+  capabilities: text('capabilities', { mode: 'json' }),
+  deliverables: text('deliverables', { mode: 'json' }),
+  process: text('process', { mode: 'json' }),
+  benefits: text('benefits', { mode: 'json' }),
+  primaryCta: text('primary_cta', { mode: 'json' }),
+  secondaryCta: text('secondary_cta', { mode: 'json' }),
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+  ogImage: text('og_image'),
   ...timestamps
 });
 
