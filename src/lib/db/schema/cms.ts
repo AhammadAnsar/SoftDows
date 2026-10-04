@@ -55,6 +55,10 @@ export const caseStudies = sqliteTable('case_studies', {
   projectUrl: text('project_url'),
   completionDate: integer('completion_date', { mode: 'timestamp' }),
   thumbnailKey: text('thumbnail_key'), // Links to R2
+  heroMediaId: text('hero_media_id'),
+  galleryMediaIds: text('gallery_media_ids'),
+  technologies: text('technologies'),
+  ogImage: text('og_image'),
   isFeatured: integer('is_featured', { mode: 'boolean' }).notNull().default(false),
   status: text('status', { enum: ['published', 'draft', 'archived'] }).notNull().default('draft'),
   seoTitle: text('seo_title'),
@@ -78,6 +82,10 @@ export const articles = sqliteTable('articles', {
   title: text('title').notNull(),
   content: text('content').notNull(), // Markdown or HTML
   authorName: text('author_name').notNull().default('Ansar Ahammad'), // Simple model; Team integration optional
+  authorId: text('author_id').references(() => teamMembers.id, { onDelete: 'set null' }),
+  excerpt: text('excerpt'),
+  featuredImageId: text('featured_image_id'),
+  ogImage: text('og_image'),
   status: text('status', { enum: ['published', 'draft', 'archived'] }).notNull().default('draft'),
   isFeatured: integer('is_featured', { mode: 'boolean' }).notNull().default(false),
   seoTitle: text('seo_title'),
@@ -237,3 +245,45 @@ export const ventures = sqliteTable('ventures', {
   ...timestamps
 });
 
+
+
+export const mediaLibrary = sqliteTable('media_library', {
+  id: id(),
+  objectKey: text('object_key').notNull().unique(),
+  originalFilename: text('original_filename').notNull(),
+  displayName: text('display_name'),
+  mimeType: text('mime_type').notNull(),
+  fileSize: integer('file_size').notNull(),
+  width: integer('width'),
+  height: integer('height'),
+  altText: text('alt_text'),
+  caption: text('caption'),
+  uploadedBy: text('uploaded_by'),
+  status: text('status', { enum: ['active', 'archived', 'deleted'] }).notNull().default('active'),
+  folder: text('folder'),
+  ...timestamps
+});
+
+export const caseStudyProducts = sqliteTable('case_study_products', {
+  id: id(),
+  caseStudyId: text('case_study_id').notNull().references(() => caseStudies.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull().references(() => softwareProducts.id, { onDelete: 'cascade' }),
+}, (t) => ({
+  unq: uniqueIndex('unq_case_study_product').on(t.caseStudyId, t.productId)
+}));
+
+export const caseStudyVentures = sqliteTable('case_study_ventures', {
+  id: id(),
+  caseStudyId: text('case_study_id').notNull().references(() => caseStudies.id, { onDelete: 'cascade' }),
+  ventureId: text('venture_id').notNull().references(() => ventures.id, { onDelete: 'cascade' }),
+}, (t) => ({
+  unq: uniqueIndex('unq_case_study_venture').on(t.caseStudyId, t.ventureId)
+}));
+
+export const articleProducts = sqliteTable('article_products', {
+  id: id(),
+  articleId: text('article_id').notNull().references(() => articles.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull().references(() => softwareProducts.id, { onDelete: 'cascade' }),
+}, (t) => ({
+  unq: uniqueIndex('unq_article_product').on(t.articleId, t.productId)
+}));

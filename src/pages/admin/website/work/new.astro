@@ -1,0 +1,71 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import Button from '../../../../components/ui/Button.astro';
+import { requirePermission } from '../../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../../lib/db';
+import { caseStudies } from '../../../../lib/db/schema/cms';
+
+const user = Astro.locals.user;
+if (!user || !requirePermission(user.role as any, 'content', 'update')) {
+  return Astro.redirect('/login');
+}
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const db = getDb((env as any).DB);
+  
+  try {
+    const id = crypto.randomUUID();
+    await db.insert(caseStudies).values({
+      id,
+      title: formData.get('title') as string,
+      slug: formData.get('slug') as string,
+      clientName: formData.get('clientName') as string,
+      projectSummary: formData.get('projectSummary') as string,
+      status: formData.get('status') as any,
+    });
+    return Astro.redirect('/admin/website/work');
+  } catch (e: any) {
+    error = e.message;
+  }
+}
+---
+<AdminLayout title="New Case Study" user={user as any}>
+  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold leading-6 text-gray-900 mb-8">New Case Study</h1>
+    {error && <div class="bg-red-50 text-red-700 p-4 rounded-md mb-6">{error}</div>}
+    
+    <form method="POST" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Title</label>
+        <input type="text" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Slug</label>
+        <input type="text" name="slug" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Client Name</label>
+        <input type="text" name="clientName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Project Summary</label>
+        <textarea name="projectSummary" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" rows="3"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Status</label>
+        <select name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-x-3">
+        <Button href="/admin/website/work" variant="secondary">Cancel</Button>
+        <Button type="submit" variant="primary">Save</Button>
+      </div>
+    </form>
+  </div>
+</AdminLayout>

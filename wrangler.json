@@ -23,5 +23,11 @@
     ],
     "vars": {
         "BETTER_AUTH_URL": "https://softdows.com"
-    }
+    },
+    "r2_buckets": [
+        {
+            "binding": "MEDIA",
+            "bucket_name": "softdows-media"
+        }
+    ]
 }
