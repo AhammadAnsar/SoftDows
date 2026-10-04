@@ -2,9 +2,9 @@
 // src/components/ui/LegalNotice.astro
 ---
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
   .font-bengali {
-    font-family: 'Noto Serif Bengali', serif;
+    font-family: 'Hind Siliguri', sans-serif;
   }
   .modal-overlay {
     background-color: rgba(15, 23, 42, 0.6);
@@ -14,7 +14,7 @@
 
 <!-- Floating Trigger Button -->
 <button id="legal-notice-trigger" class="fixed bottom-6 left-6 z-[45] flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur text-slate-800 text-sm font-semibold rounded-full shadow-lg border border-slate-200 hover:shadow-xl hover:bg-slate-50 transition-all font-bengali transform hover:scale-105">
-  <span class="text-amber-500 text-lg">⚠️</span> জরুরি আইনি বিজ্ঞপ্তি
+  <span class="text-amber-500 text-lg">⚠️</span> জরুরি বিজ্ঞপ্তি
 </button>
 
 <!-- Modal Overlay -->
@@ -45,7 +45,7 @@
     <!-- Footer Actions -->
     <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
       <button id="legal-notice-close" class="w-full sm:w-auto px-6 py-2.5 rounded-lg text-slate-600 font-bengali font-semibold hover:bg-slate-200 transition-colors order-2 sm:order-1">
-        বুঝেছি ও বন্ধ করুন
+        বন্ধ করুন
       </button>
       <a href="/legal-disclaimer" class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-[var(--color-brand-navy)] text-white font-bengali font-semibold hover:bg-slate-800 transition-colors shadow-sm text-center order-1 sm:order-2" id="legal-notice-readmore">
         বিস্তারিত আইনি নোটিশ পড়ুন
@@ -60,21 +60,6 @@
   const triggerBtn = document.getElementById('legal-notice-trigger');
   const closeBtn = document.getElementById('legal-notice-close');
   const readMoreBtn = document.getElementById('legal-notice-readmore');
-  
-  const ACK_KEY = 'sd_legal_notice_ack_2026';
-  const EXPIRY_DAYS = 7;
-  const SHOW_DELAY_MS = 1200;
-
-  function shouldShowModal() {
-    const ack = localStorage.getItem(ACK_KEY);
-    if (!ack) return true;
-    const expiry = parseInt(ack, 10);
-    if (Date.now() > expiry) {
-      localStorage.removeItem(ACK_KEY);
-      return true;
-    }
-    return false;
-  }
 
   function openModal() {
     if(modal && content) {
@@ -95,36 +80,15 @@
     }
   }
 
-  function acknowledge() {
-    const expiry = Date.now() + EXPIRY_DAYS * 24 * 60 * 60 * 1000;
-    localStorage.setItem(ACK_KEY, expiry.toString());
-    closeModal();
-  }
-
-  // Auto-show modal after delay if not acknowledged
-  if (shouldShowModal()) {
-    setTimeout(() => {
-      openModal();
-    }, SHOW_DELAY_MS);
-  }
-
   // Event Listeners
-  if (triggerBtn) {
-    triggerBtn.addEventListener('click', openModal);
-  }
+  if (triggerBtn) triggerBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (readMoreBtn) readMoreBtn.addEventListener('click', closeModal);
   
-  if (closeBtn) {
-    closeBtn.addEventListener('click', acknowledge);
-  }
-  
-  if (readMoreBtn) {
-    readMoreBtn.addEventListener('click', closeModal);
-  }
-  
-  // Close on overlay click (outside modal content)
+  // Close on overlay click
   if (modal) {
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) acknowledge();
+      if (e.target === modal) closeModal();
     });
   }
 </script>
