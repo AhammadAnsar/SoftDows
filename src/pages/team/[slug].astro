@@ -20,10 +20,11 @@ if (!member) return Astro.redirect('/404');
 <MainLayout title={member.seoTitle || member.name} description={member.seoDescription || undefined}>
   <Section variant="light" size="large" class="pt-32 pb-24">
     <div class="max-w-3xl mx-auto text-center">
-      <div class="w-48 h-48 bg-slate-200 rounded-full mx-auto mb-8 flex items-center justify-center text-4xl font-bold text-slate-500">{member.monogramFallback}</div>
+      {member.avatarKey ? <img src={member.avatarKey} alt={member.name} class="w-48 h-48 rounded-full mx-auto mb-8 object-cover" /> : <div class="w-48 h-48 bg-slate-200 rounded-full mx-auto mb-8 flex items-center justify-center text-4xl font-bold text-slate-500">{member.monogramFallback}</div>}
       <h1 class="text-4xl md:text-6xl font-bold mb-4">{member.name}</h1>
       <p class="text-2xl text-[var(--color-brand-purple)] mb-8">{member.role}</p>
       <p class="text-lg text-slate-600 leading-relaxed text-left">{member.fullBio}</p>
     </div>
   </Section>
 </MainLayout>
+

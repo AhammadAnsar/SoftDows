@@ -24,7 +24,7 @@ const allTeam = await db.select().from(teamMembers)
     <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
       {allTeam.map(t => (
         <a href={`/team/${t.slug}/`} class="block p-8 border rounded-3xl hover:shadow-xl text-center">
-          <div class="w-32 h-32 bg-slate-200 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl font-bold text-slate-500">{t.monogramFallback}</div>
+          {t.avatarKey ? <img src={t.avatarKey} alt={t.name} class="w-32 h-32 rounded-full mx-auto mb-6 object-cover" /> : <div class="w-32 h-32 bg-slate-200 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl font-bold text-slate-500">{t.monogramFallback}</div>}
           <h3 class="text-xl font-bold">{t.name}</h3>
           <p class="text-[var(--color-brand-purple)]">{t.role}</p>
         </a>
@@ -32,3 +32,4 @@ const allTeam = await db.select().from(teamMembers)
     </div>
   </Section>
 </MainLayout>
+

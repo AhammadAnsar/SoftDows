@@ -6,10 +6,14 @@ export const siteConfig = {
 };
 
 export const contactConfig = {
-  email: 'sales@softdows.com',
-  phonePrimary: '+8801737011052',
-  phoneSecondary: '+8801970447979',
-  address: 'Boxgonj Bazar, Nangalkot, Cumilla, Bangladesh',
+  email: 'contact@softdows.com',
+  phonePrimary: '01737011052',
+  phoneSecondary: '',
+  address: 'Agrani Bank Road, Boxgonj Bazar, Nangalkot, Cumilla',
+  mapCoordinates: '23.067358696895635, 91.23716966557694',
   whatsapp: 'https://wa.me/8801737011052',
-  socials: [] as { name: string, url: string }[]
+  imo: '01737011052',
+  socials: [
+    { name: 'Facebook', url: 'https://www.facebook.com/softdows/' }
+  ]
 };

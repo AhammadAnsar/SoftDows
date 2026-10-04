@@ -13,10 +13,7 @@ const currentPath = Astro.url.pathname;
 ---
 <header class="sticky top-0 z-50 w-full border-b border-[var(--color-border-subtle)] bg-white/90 backdrop-blur-xl shadow-sm shadow-slate-900/5">
   <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-    <!-- Logo -->
-    <a href="/" class="text-2xl font-bold tracking-tight text-[var(--color-brand-navy)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-purple)] rounded-md transition-colors hover:text-[var(--color-brand-purple)] z-50">
-      SoftDows
-    </a>
+    <!-- Logo --> <a href="/" class="inline-flex items-center z-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-purple)] rounded-md transition-opacity hover:opacity-80"><img src="/logo.png" alt="SoftDows Logo" class="h-10 w-auto" /></a>
 
     <!-- Desktop Nav -->
     <nav class="hidden md:flex items-center gap-6 lg:gap-8" aria-label="Main Navigation">
@@ -182,6 +179,7 @@ const currentPath = Astro.url.pathname;
     });
   });
 </script>
+
 
 
 

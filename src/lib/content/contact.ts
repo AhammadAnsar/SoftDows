@@ -14,16 +14,23 @@ export const contactContent = {
       {
         type: 'email',
         label: 'Email Us',
-        value: 'sales@softdows.com',
-        url: 'mailto:sales@softdows.com',
+        value: 'contact@softdows.com',
+        url: 'mailto:contact@softdows.com',
         description: 'For general inquiries and information.'
       },
       {
         type: 'phone',
-        label: 'Phone',
-        value: '+8801737011052',
-        url: 'tel:+8801737011052',
-        description: 'For urgent matters.'
+        label: 'Mobile',
+        value: '01737011052',
+        url: 'tel:01737011052',
+        description: 'Call, WhatsApp, or IMO.'
+      },
+      {
+        type: 'address',
+        label: 'Office Address',
+        value: 'Agrani Bank Road, Boxgonj Bazar, Nangalkot, Cumilla',
+        url: 'https://www.google.com/maps?q=23.067358696895635,91.23716966557694',
+        description: 'Visit our office for a face-to-face discussion.'
       }
     ]
   },
