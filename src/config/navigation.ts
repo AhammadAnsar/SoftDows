@@ -112,5 +112,6 @@ export const footerNav = {
   legal: [
     { label: 'Privacy Policy', href: '/privacy/' },
     { label: 'Terms of Service', href: '/terms/' },
+    { label: 'আইনি বিজ্ঞপ্তি / Legal Disclaimer', href: '/legal-disclaimer/' },
   ],
 };
