@@ -40,6 +40,8 @@ export const teamData: Record<string, TeamMember> = {
     role: 'Founder',
     shortBio: 'Ansar Ahammad is the Founder of SoftDows, focusing on practical digital solutions designed around business needs, usability, maintainability and long-term value.',
     fullBio: 'Ansar Ahammad established SoftDows to bridge the gap between complex engineering and practical business operations. With a strong commitment to clean architecture and user-centric design, he ensures that every project is engineered for tangible business outcomes rather than just technical novelty. His approach emphasizes transparency, reliability, and long-term scalability.',
+    photo: '/ansar-ahammad.jpg',
+    photoAlt: 'Ansar Ahammad',
     monogramFallback: 'AA',
     expertise: ['Digital Strategy', 'Systems Architecture', 'Business Operations', 'Product Engineering'],
     skills: [],
