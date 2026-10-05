@@ -57,7 +57,7 @@ if (dbHome && dbHome.sections && Object.keys(dbHome.sections).length > 0) {
 const publishedVentures = getPublishedVentures();
 const allProducts = getPublishedProducts();
 const featuredProducts = allProducts.slice(0, 6);
-const featuredVentures = publishedVentures.filter(v => v.featured || v.visibility === 'public').slice(0, 4);
+const featuredVentures = publishedVentures.filter(v => v.featured).slice(0, 4);
 const founder = getPublishedTeam().find(m => m.id === 'ansar-ahammad');
 
 const productVisuals: Record<string, { gradient: string; badge: string; svgPath: string }> = {
