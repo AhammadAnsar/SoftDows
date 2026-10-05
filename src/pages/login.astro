@@ -1,93 +1,177 @@
 ---
-export const prerender = false;
 import MainLayout from '../layouts/MainLayout.astro';
+import { contactConfig } from '../config/site';
 
-// If already authenticated, redirect away
-if (Astro.locals.user && Astro.locals.session) {
-  const role = (Astro.locals.user as any).role;
-  if (role === 'super_admin' || role === 'admin') {
-    return Astro.redirect('/admin');
-  }
-  return Astro.redirect('/portal');
-}
+const seo = {
+  title: 'Secure Access | SoftDows',
+  description: 'Enterprise production gateway and administrative console for SoftDows systems.',
+  noindex: true
+};
 ---
 
-<MainLayout title="Sign In | SoftDows" description="Sign in to your SoftDows client portal or admin dashboard.">
-  <main class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-    <!-- Subtle Background Element -->
-    <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-gray-50 to-gray-50 opacity-50"></div>
-
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="flex justify-center">
-        <a href="/" class="text-2xl font-bold tracking-tight text-gray-900 hover:text-indigo-600 transition-colors">
-          SoftDows<span class="text-indigo-600">.</span>
-        </a>
-      </div>
-      <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-        Sign in to your account
-      </h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        Client Portal & Administrative Access
-      </p>
+<MainLayout title={seo.title} description={seo.description} noindex={seo.noindex}>
+  <!-- Deep Space Canvas -->
+  <div class="min-h-screen bg-[#070913] relative flex items-center justify-center p-4 sm:p-8 overflow-hidden font-sans">
+    
+    <!-- Ambient Aurora Halos -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[130px] mix-blend-screen"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[130px] mix-blend-screen"></div>
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow-xl shadow-gray-200/50 sm:rounded-2xl sm:px-10 border border-gray-100">
+    <!-- Split-Console Architecture Card -->
+    <div class="relative z-10 w-full max-w-4xl rounded-3xl bg-[#0D121F]/90 backdrop-blur-2xl border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_40px_-10px_rgba(99,102,241,0.25)] overflow-hidden">
+      
+      <div class="grid grid-cols-1 md:grid-cols-12 h-full">
         
-        <form id="login-form" class="space-y-6">
-          <div id="error-alert" class="hidden rounded-md bg-red-50 p-4 border border-red-100">
-            <div class="flex">
-              <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800" id="error-message">Invalid credentials</h3>
-              </div>
+        <!-- Left Side: 3D Visual Console (Hidden on very small mobile) -->
+        <div class="hidden md:block md:col-span-5 relative bg-[#04060B] border-r border-white/5 overflow-hidden">
+          
+          <!-- Top Glass Badge -->
+          <div class="absolute top-6 left-6 z-20">
+            <div class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-2 text-[10px] font-mono text-cyan-300 uppercase tracking-widest shadow-lg">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              Production Gateway
             </div>
           </div>
 
-          <div>
-            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
-            <div class="mt-2">
-              <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-2.5 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-shadow">
-            </div>
+          <!-- 3D Vector Art -->
+          <div class="absolute inset-0 flex items-center justify-center opacity-90">
+            <img src="/images/auth-art.svg" alt="Digital Architecture System" class="w-full h-full object-cover object-center" />
           </div>
 
-          <div>
-            <div class="flex items-center justify-between">
-              <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
-              <div class="text-sm group relative">
-                <!-- Prepared for future password reset flow. Disabled until email provider is configured. -->
-                <span class="font-medium text-gray-400 cursor-not-allowed">Forgot password?</span>
-                <div class="pointer-events-none absolute bottom-full right-0 mb-2 w-56 rounded bg-gray-900 px-3 py-2 text-center text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-10 shadow-lg">
-                  Account recovery is currently handled through support. Please contact your administrator.
+          <!-- Enterprise Console Tag -->
+          <div class="absolute bottom-6 left-6 z-20">
+            <h2 class="text-white text-lg font-bold tracking-tight">SoftDows OS</h2>
+            <p class="text-xs text-slate-500 font-mono mt-1">Core Architecture Node</p>
+          </div>
+          
+        </div>
+
+        <!-- Right Side: Interactive Authentication Form -->
+        <div class="md:col-span-7 p-8 sm:p-12 lg:p-16 flex flex-col justify-center relative">
+          
+          <div class="mb-10 space-y-2">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Secure Access</h1>
+            <p class="text-sm text-slate-400">Authenticate to enter the enterprise workspace.</p>
+          </div>
+
+          <!-- Error Alert Container -->
+          <div id="error-alert" class="hidden mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs sm:text-sm flex items-start gap-3">
+            <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span id="error-message" class="font-medium"></span>
+          </div>
+
+          <form id="login-form" class="space-y-6">
+            
+            <!-- Email Input -->
+            <div class="space-y-2">
+              <label for="email" class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                Work Email
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  autocomplete="email" 
+                  required 
+                  placeholder="architect@softdows.com"
+                  class="w-full pl-10 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder:text-slate-500 focus:bg-white/[0.08] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="password" class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                  Password
+                </label>
+                <div class="text-[11px] group relative">
+                  <span class="text-slate-400 hover:text-cyan-300 cursor-pointer transition-colors">
+                    Forgot?
+                  </span>
+                  <div class="pointer-events-none absolute bottom-full right-0 mb-2 w-56 rounded-xl bg-slate-900/95 p-2.5 text-center text-[11px] text-slate-200 opacity-0 transition-opacity group-hover:opacity-100 z-50 shadow-2xl border border-white/15 backdrop-blur-md">
+                    Contact support: <span class="font-bold text-white">{contactConfig.phonePrimary}</span>
+                  </div>
                 </div>
               </div>
+              
+              <div class="relative">
+                <input 
+                  id="password" 
+                  name="password" 
+                  type="password" 
+                  autocomplete="current-password" 
+                  required 
+                  placeholder="••••••••••••"
+                  class="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder:text-slate-500 focus:bg-white/[0.08] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all"
+                />
+                <button 
+                  type="button" 
+                  id="toggle-password" 
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors focus:outline-none"
+                  aria-label="Toggle password visibility"
+                >
+                  <svg id="eye-open" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <svg id="eye-closed" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div class="mt-2">
-              <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-2.5 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-shadow">
+
+            <!-- Radiant Action Button -->
+            <div class="pt-2">
+              <button 
+                type="submit" 
+                id="submit-btn" 
+                class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white text-sm font-bold shadow-[0_0_25px_-5px_rgba(99,102,241,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-[#0B0F19]"
+              >
+                <span id="submit-text">Enter Workspace &rarr;</span>
+                <svg id="submit-spinner" class="hidden h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </button>
             </div>
+
+          </form>
+
+          <!-- Minimal Trust Footnote -->
+          <div class="pt-6 mt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+            <span class="flex items-center gap-1.5 text-emerald-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>256-bit Encrypted</span>
+            </span>
+
+            <a 
+              href={`https://wa.me/880${contactConfig.phonePrimary.replace(/^0+/, '')}`} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="hover:text-cyan-300 transition-colors"
+            >
+              Support &rarr;
+            </a>
           </div>
 
-          <div>
-            <button type="submit" id="submit-btn" class="flex w-full justify-center rounded-md bg-gray-900 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors disabled:opacity-70">
-              <span id="submit-text">Sign in</span>
-              <svg id="submit-spinner" class="hidden ml-2 h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </button>
-          </div>
-        </form>
+        </div>
+
       </div>
-      
-      <p class="mt-8 text-center text-xs text-gray-500">
-        Secured by SoftDows Identity.
-      </p>
+
     </div>
-  </main>
+  </div>
 </MainLayout>
 
 <script>
@@ -99,6 +183,21 @@ if (Astro.locals.user && Astro.locals.session) {
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const submitText = document.getElementById('submit-text');
   const submitSpinner = document.getElementById('submit-spinner');
+
+  // Password visibility toggle
+  const togglePasswordBtn = document.getElementById('toggle-password');
+  const passwordInput = document.getElementById('password') as HTMLInputElement;
+  const eyeOpen = document.getElementById('eye-open');
+  const eyeClosed = document.getElementById('eye-closed');
+
+  if (togglePasswordBtn && passwordInput && eyeOpen && eyeClosed) {
+    togglePasswordBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      eyeOpen.classList.toggle('hidden', isPassword);
+      eyeClosed.classList.toggle('hidden', !isPassword);
+    });
+  }
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -130,8 +229,6 @@ if (Astro.locals.user && Astro.locals.session) {
       if (redirectTo && redirectTo.startsWith('/')) {
         window.location.href = redirectTo;
       } else {
-        // We let the server redirect based on role by simply reloading to a protected route 
-        // or we check the user role from data
         const role = data?.user?.role;
         if (role === 'super_admin' || role === 'admin') {
           window.location.href = '/admin';
@@ -151,4 +248,3 @@ if (Astro.locals.user && Astro.locals.session) {
     }
   });
 </script>
-
