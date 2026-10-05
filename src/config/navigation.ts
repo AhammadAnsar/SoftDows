@@ -88,11 +88,14 @@ export const mainNav: MainNavItem[] = [
 
 export const footerNav = {
   services: [
-    { label: 'Website Design', href: '/services/website-design-development/' },
-    { label: 'Custom Software', href: '/services/custom-software-web-applications/' },
-    { label: 'eCommerce', href: '/services/ecommerce-development/' },
-    { label: 'Domains', href: '/services/domain-registration-management/' },
-    { label: 'Web Hosting', href: '/services/managed-web-hosting/' },
+    { label: 'Custom Software & Web Apps', href: '/services/custom-software-web-applications/' },
+    { label: 'Website Design & Development', href: '/services/website-design-development/' },
+    { label: 'eCommerce Systems & Stores', href: '/services/ecommerce-development/' },
+    { label: 'UI/UX & Design Systems', href: '/services/ui-ux-design/' },
+    { label: 'Technical SEO & Digital Visibility', href: '/services/seo-digital-visibility/' },
+    { label: 'Website Maintenance & Cloud Support', href: '/services/website-maintenance-support/' },
+    { label: 'Domain Registration & DNS', href: '/services/domain-registration-management/' },
+    { label: 'Managed Edge Cloud Hosting', href: '/services/managed-web-hosting/' }
   ],
   products: [
     { label: 'Biddalok', href: '/products/biddalok/' },
@@ -100,18 +103,23 @@ export const footerNav = {
     { label: 'EduWeb', href: '/products/eduweb/' },
     { label: 'SmartTutor', href: '/products/smarttutor/' },
     { label: 'ExpertHunter', href: '/products/experthunter/' },
-    { label: 'EasyWebDev', href: '/products/easywebdev/' },
+    { label: 'EasyWebDev', href: '/products/easywebdev/' }
+  ],
+  ventures: [
+    { label: 'BanglaNotice', href: '/ventures/banglanotice/' },
+    { label: 'BidyaShikhi', href: '/ventures/bidyashikhi/' },
+    { label: 'NiceTrix', href: '/ventures/nicetrix/' },
+    { label: 'BahariMart', href: '/ventures/baharimart/' }
   ],
   company: [
-    { label: 'About Us', href: '/about/' },
-    { label: 'Our Team', href: '/team/' },
-    { label: 'Our Ventures', href: '/ventures/' },
+    { label: 'About SoftDows', href: '/about/' },
+    { label: 'Leadership & Team', href: '/team/' },
     { label: 'Start a Project', href: '/start-a-project/' },
-    { label: 'Contact Us', href: '/contact/' },
+    { label: 'Contact Us', href: '/contact/' }
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy/' },
     { label: 'Terms of Service', href: '/terms/' },
-    { label: 'আইনি বিজ্ঞপ্তি / Legal Disclaimer', href: '/legal-disclaimer/' },
-  ],
+    { label: 'Legal Disclaimers', href: '/legal-disclaimer/' }
+  ]
 };

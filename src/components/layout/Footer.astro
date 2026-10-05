@@ -13,7 +13,14 @@ const [dbFooterNav, dbSettings] = await Promise.all([
   getGlobalSiteSettings(db).catch(() => ({} as Record<string, string>))
 ]);
 
-const footerNav = dbFooterNav || fallbackFooterNav;
+// Always ensure all categories are populated from fallback if DB returns partial
+const footerNav = {
+  services: (dbFooterNav?.services && dbFooterNav.services.length > 0) ? dbFooterNav.services : fallbackFooterNav.services,
+  products: (dbFooterNav?.products && dbFooterNav.products.length > 0) ? dbFooterNav.products : fallbackFooterNav.products,
+  ventures: (dbFooterNav?.ventures && dbFooterNav.ventures.length > 0) ? dbFooterNav.ventures : fallbackFooterNav.ventures,
+  company: (dbFooterNav?.company && dbFooterNav.company.length > 0) ? dbFooterNav.company : fallbackFooterNav.company,
+  legal: (dbFooterNav?.legal && dbFooterNav.legal.length > 0) ? dbFooterNav.legal : fallbackFooterNav.legal,
+};
 
 const contactConfig = {
   address: dbSettings['contact_address'] || fallbackContactConfig.address,
@@ -30,128 +37,229 @@ const allWork = await getCollection('work').catch(() => []);
 const hasPublishedWork = allWork.filter((p: any) => !p.data.isDraft).length > 0;
 const filteredCompanyNav = hasPublishedWork ? footerNav.company : (footerNav.company || []).filter((item: any) => item.href !== '/work/');
 ---
-<footer class="bg-[var(--color-brand-navy)] text-white relative overflow-hidden pt-16 pb-8 md:pt-24 md:pb-12 mt-auto border-t border-slate-800">
-  {/* Abstract geometric background */}
-  <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-20"></div>
-  <div class="absolute top-0 right-0 w-full max-w-2xl aspect-square bg-[var(--color-brand-purple)]/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-  <div class="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-    <div class="grid grid-cols-1 gap-12 lg:grid-cols-5 xl:gap-8">
+<footer class="bg-[#060812] text-white relative mt-auto border-t border-slate-800/80">
+  
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-20 space-y-16">
+    
+    <!-- ======================================================================= -->
+    <!-- 1. TOP EXECUTIVE HEADER: Brand Identity & Direct Communication Channel   -->
+    <!-- ======================================================================= -->
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-10 pb-12 border-b border-white/10">
       
-      <!-- Brand & Positioning Column -->
-      <div class="lg:col-span-2">
-        <a href="/" class="inline-block text-3xl font-bold tracking-tight text-white mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-md transition-colors hover:text-[var(--color-brand-light)]">
-          <img src="/logo.png" alt={siteConfig.name} class="h-12 w-auto bg-white/95 px-3 py-2 rounded-lg" />
+      <!-- Brand & Mission Statement -->
+      <div class="space-y-4 max-w-xl">
+        <a href="/" class="inline-flex items-center gap-1 group">
+          <span class="text-3xl font-black tracking-tight text-white group-hover:text-indigo-200 transition-colors">
+            Soft<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-cyan-400">Dows</span><span class="text-cyan-400">.</span>
+          </span>
         </a>
-        <p class="text-[var(--color-brand-light)] opacity-70 text-base leading-relaxed max-w-sm mb-8 font-light">
-          {siteConfig.description}
+        <p class="text-xs font-mono tracking-widest uppercase text-slate-400 font-semibold">
+          Software & Digital Architecture
         </p>
+        <p class="text-sm text-slate-400 leading-relaxed font-normal">
+          Architecting resilient digital platforms, bespoke software, and high-performance cloud infrastructure. Built on modern edge architecture with 100% source code ownership.
+        </p>
+      </div>
+
+      <!-- Clean, Professional Contact Badges -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-4 shrink-0">
         
-        <div class="flex flex-col gap-4 text-sm text-white">
-          <a href={`mailto:${contactConfig.email}`} class="flex items-center gap-3 hover:text-white group transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm w-fit font-medium">
-            <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-              <svg class="h-5 w-5 text-[var(--color-brand-light)]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-              </svg>
-            </div>
-            {contactConfig.email}
-          </a>
-          <a href={`tel:${contactConfig.phonePrimary.replace(/\s+/g, '')}`} class="flex items-center gap-3 hover:text-white group transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm w-fit font-medium">
-            <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-              <svg class="h-5 w-5 text-[var(--color-brand-light)]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.08-7.074-6.974l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-              </svg>
-            </div>
-            {contactConfig.phonePrimary} (Call, WhatsApp, IMO)
-          </a>
-          
-          <div class="flex items-start gap-3 text-[var(--color-brand-light)] font-medium mt-2">
-            <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-              <svg class="h-5 w-5 text-[var(--color-brand-light)]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-              </svg>
-            </div>
-            <div class="pt-2 max-w-[220px] opacity-80 leading-relaxed text-sm">
-              {contactConfig.address}
-            </div>
+        <!-- Direct Phone & WhatsApp (Official SoftDows Number) -->
+        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
+          <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Engineering Hotline</div>
+          <div class="flex items-center justify-between gap-2">
+            <a 
+              href={`tel:${contactConfig.phonePrimary.replace(/\s+/g, '')}`} 
+              class="text-xs font-bold text-white hover:text-cyan-400 transition-colors"
+            >
+              {contactConfig.phonePrimary}
+            </a>
+            <a 
+              href={`https://wa.me/880${contactConfig.phonePrimary.replace(/^0+/, '')}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold hover:bg-emerald-500/30 transition-colors"
+            >
+              WhatsApp
+            </a>
           </div>
         </div>
+
+        <!-- Official Proposals Email -->
+        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
+          <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Inquiries & RFC</div>
+          <a 
+            href={`mailto:${contactConfig.email}`} 
+            class="block text-xs font-bold text-white hover:text-cyan-400 transition-colors truncate"
+          >
+            {contactConfig.email}
+          </a>
+        </div>
+
+        <!-- Studio Location -->
+        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
+          <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Studio Location</div>
+          <div class="text-xs text-slate-300 truncate">
+            Cumilla, Bangladesh
+          </div>
+        </div>
+
       </div>
 
-      <!-- Navigation Columns -->
-      <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 sm:gap-8">
-        <div>
-          <h3 class="text-xs font-bold text-white tracking-widest uppercase mb-6 opacity-60">Services</h3>
-          <ul class="flex flex-col gap-4">
-            {footerNav.services.map(item => (
-              <li>
-                <a href={item.href} class="text-sm text-[var(--color-brand-light)] opacity-80 hover:opacity-100 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm">
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xs font-bold text-white tracking-widest uppercase mb-6 opacity-60">Products</h3>
-          <ul class="flex flex-col gap-4">
-            {footerNav.products.map(item => (
-              <li>
-                <a href={item.href} class="text-sm text-[var(--color-brand-light)] opacity-80 hover:opacity-100 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm">
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xs font-bold text-white tracking-widest uppercase mb-6 opacity-60">Company</h3>
-          <ul class="flex flex-col gap-4">
-            {filteredCompanyNav.map(item => (
-              <li>
-                <a href={item.href} class="text-sm text-[var(--color-brand-light)] opacity-80 hover:opacity-100 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm">
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xs font-bold text-white tracking-widest uppercase mb-6 opacity-60">Legal</h3>
-          <ul class="flex flex-col gap-4">
-            {footerNav.legal.map(item => (
-              <li>
-                <a href={item.href} class="text-sm text-[var(--color-brand-light)] opacity-80 hover:opacity-100 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm">
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
     </div>
 
-    <!-- Copyright Area -->
-    <div class="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
-      <p class="text-sm text-[var(--color-brand-light)] opacity-60 text-center md:text-left">
+    <!-- ======================================================================= -->
+    <!-- 2. REFINED NAVIGATION DIRECTORY: Clean Titles, Subtle Bullets on Items   -->
+    <!-- ======================================================================= -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+      
+      <!-- 1. Services -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+          Services
+        </h3>
+        <ul class="space-y-2.5 text-xs">
+          {footerNav.services.map((item: any) => (
+            <li>
+              <a 
+                href={item.href} 
+                class="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-cyan-400 group-hover:scale-125 transition-all shrink-0"></span>
+                <span class="group-hover:translate-x-0.5 transition-transform">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- 2. Products -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+          Products
+        </h3>
+        <ul class="space-y-2.5 text-xs">
+          {footerNav.products.map((item: any) => (
+            <li>
+              <a 
+                href={item.href} 
+                class="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-indigo-400 group-hover:scale-125 transition-all shrink-0"></span>
+                <span class="group-hover:translate-x-0.5 transition-transform">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- 3. Ventures -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+          Ventures
+        </h3>
+        <ul class="space-y-2.5 text-xs">
+          {footerNav.ventures.map((item: any) => (
+            <li>
+              <a 
+                href={item.href} 
+                class="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-emerald-400 group-hover:scale-125 transition-all shrink-0"></span>
+                <span class="group-hover:translate-x-0.5 transition-transform">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- 4. Company & Legal -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+          Company & Legal
+        </h3>
+        <ul class="space-y-2.5 text-xs">
+          {filteredCompanyNav.map((item: any) => (
+            <li>
+              <a 
+                href={item.href} 
+                class="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 group-hover:scale-125 transition-all shrink-0"></span>
+                <span class="group-hover:translate-x-0.5 transition-transform">{item.label}</span>
+              </a>
+            </li>
+          ))}
+          {footerNav.legal.map((item: any) => (
+            <li>
+              <a 
+                href={item.href} 
+                class="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <span class="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-slate-300 group-hover:scale-125 transition-all shrink-0"></span>
+                <span class="group-hover:translate-x-0.5 transition-transform">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 3. BOTTOM BAR: Copyright & Sleek Social Accounts                        -->
+    <!-- ======================================================================= -->
+    <div class="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-500">
+      
+      <p class="font-normal text-center sm:text-left">
         {copyrightText}
       </p>
-      
-      <!-- Only mapping configured socials if available in future -->
-      <div class="flex gap-4">
-        {contactConfig.socials?.map((social: { name: string, url: string }) => (
-          <a href={social.url} target="_blank" rel="noopener noreferrer" class="text-[var(--color-brand-light)] opacity-60 hover:opacity-100 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-brand-navy)] focus-visible:ring-white rounded-sm text-sm">
-            {social.name}
-          </a>
-        ))}
+
+      <!-- 100% Static SVG Social Media Links -->
+      <div class="flex items-center gap-3">
+        <!-- Facebook -->
+        <a 
+          href="https://www.facebook.com/softdows/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          aria-label="SoftDows Facebook Page"
+          class="w-9 h-9 rounded-xl bg-white/5 hover:bg-[#1877F2]/20 border border-white/10 hover:border-[#1877F2]/40 text-slate-400 hover:text-[#1877F2] flex items-center justify-center transition-all duration-200"
+        >
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </a>
+
+        <!-- Instagram -->
+        <a 
+          href="https://www.instagram.com/softdows/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          aria-label="SoftDows Instagram Profile"
+          class="w-9 h-9 rounded-xl bg-white/5 hover:bg-[#E4405F]/20 border border-white/10 hover:border-[#E4405F]/40 text-slate-400 hover:text-[#E4405F] flex items-center justify-center transition-all duration-200"
+        >
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </a>
+
+        <!-- YouTube -->
+        <a 
+          href="https://www.youtube.com/@BidyaShikhi" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          aria-label="SoftDows YouTube Channel"
+          class="w-9 h-9 rounded-xl bg-white/5 hover:bg-[#FF0000]/20 border border-white/10 hover:border-[#FF0000]/40 text-slate-400 hover:text-[#FF0000] flex items-center justify-center transition-all duration-200"
+        >
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </a>
       </div>
+
     </div>
+
   </div>
+
 </footer>
-
-
-
