@@ -7,52 +7,7 @@ import { getPublishedProducts } from '../lib/content/products';
 import { getPublishedTeam } from '../lib/content/team';
 import { clientPartners } from '../lib/content/clients';
 
-import { env } from 'cloudflare:workers';
-import { getDb } from '../lib/db';
-import { getHomepageData } from '../lib/cms/content';
-
-const db = getDb((env as any).DB);
-const dbHome = await getHomepageData(db).catch(() => null);
-
-let c: any = homeContent;
-if (dbHome && dbHome.sections && Object.keys(dbHome.sections).length > 0) {
-  const s = dbHome.sections;
-  c = {
-    seo: {
-      title: dbHome.seoTitle || homeContent.seo.title,
-      description: dbHome.seoDescription || homeContent.seo.description
-    },
-    hero: s.hero ? {
-      eyebrow: s.hero.subheading || homeContent.hero.eyebrow,
-      heading: s.hero.heading || homeContent.hero.heading,
-      description: s.hero.content || homeContent.hero.description,
-      primaryCta: { label: s.hero.ctaText || homeContent.hero.primaryCta.label, url: s.hero.ctaLink || homeContent.hero.primaryCta.url },
-      secondaryCta: s.hero.structuredData?.secondaryCta || homeContent.hero.secondaryCta
-    } : homeContent.hero,
-    services: s.services ? {
-      heading: s.services.heading || homeContent.services.heading,
-      description: s.services.content || homeContent.services.description,
-      items: s.services.structuredData?.items || homeContent.services.items
-    } : homeContent.services,
-    whySoftDows: s.ecosystem ? {
-      heading: s.ecosystem.heading || homeContent.whySoftDows.heading,
-      description: s.ecosystem.content || homeContent.whySoftDows.description,
-      features: s.ecosystem.structuredData?.features || homeContent.whySoftDows.features,
-      capabilityApproach: s.ecosystem.structuredData?.capabilityApproach || homeContent.whySoftDows.capabilityApproach
-    } : homeContent.whySoftDows,
-    process: s.process ? {
-      heading: s.process.heading || homeContent.process.heading,
-      description: s.process.content || homeContent.process.description,
-      steps: s.process.structuredData?.steps || homeContent.process.steps
-    } : homeContent.process,
-    finalCta: s.final_cta ? {
-      heading: s.final_cta.heading || homeContent.finalCta.heading,
-      description: s.final_cta.content || homeContent.finalCta.description,
-      primaryCta: { label: s.final_cta.ctaText || homeContent.finalCta.primaryCta.label, url: s.final_cta.ctaLink || homeContent.finalCta.primaryCta.url },
-      secondaryCta: s.final_cta.structuredData?.secondaryCta || homeContent.finalCta.secondaryCta
-    } : homeContent.finalCta
-  };
-}
+const c: any = homeContent;
 
 const publishedVentures = getPublishedVentures();
 const allProducts = getPublishedProducts();

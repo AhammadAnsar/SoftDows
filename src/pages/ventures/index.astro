@@ -1,9 +1,5 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import { env } from 'cloudflare:workers';
-import { getDb } from '../../lib/db';
-import { ventures } from '../../lib/db/schema/cms';
-import { eq, asc } from 'drizzle-orm';
 import { getPublishedVentures } from '../../lib/content/ventures';
 
 export const prerender = false;
@@ -11,15 +7,7 @@ export const prerender = false;
 // Cloudflare Edge Caching Header (Zero Worker Compute Cost)
 Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
 
-const db = getDb((env as any).DB);
-const fallbackVentures = getPublishedVentures();
-const dbVentures = await db.select().from(ventures)
-  .where(eq(ventures.isVisible, true))
-  .orderBy(asc(ventures.displayOrder))
-  .all()
-  .catch(() => []);
-
-const allVentures = (dbVentures && dbVentures.length > 0) ? dbVentures : fallbackVentures;
+const allVentures = getPublishedVentures();
 
 // Visual identity and aesthetic attributes for each venture
 const ventureStyles: Record<string, {

@@ -1,21 +1,10 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import { env } from 'cloudflare:workers';
-import { getDb } from '../../lib/db';
-import { services } from '../../lib/db/schema/agency';
-import { eq, asc } from 'drizzle-orm';
 
 export const prerender = false;
 
 // Cloudflare Edge Caching Header (Zero Worker Compute Cost)
 Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
-
-const db = getDb((env as any).DB);
-const dbServices = await db.select().from(services)
-  .where(eq(services.isVisible, true))
-  .orderBy(asc(services.displayOrder))
-  .all()
-  .catch(() => []);
 
 // Hero Slider Data (3 High-Impact Service Slides)
 const heroSlides = [
