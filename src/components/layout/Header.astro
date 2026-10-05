@@ -7,7 +7,20 @@ import { getNavigation } from '../../lib/cms/content';
 
 const db = getDb((env as any).DB);
 const dbMainNav = await getNavigation(db, 'header').catch(() => null);
-const mainNav = dbMainNav || fallbackMainNav;
+// Ensure that if DB returns flat navigation without children, fallback rich sub-menus are preserved
+const mainNav = (dbMainNav && dbMainNav.length > 0)
+  ? dbMainNav.map((item: any) => {
+      if (!item.children || item.children.length === 0) {
+        const fallback = fallbackMainNav.find(
+          (f: any) => f.href === item.href || f.label.toLowerCase() === item.label.toLowerCase()
+        );
+        if (fallback && fallback.children && fallback.children.length > 0) {
+          return { ...item, children: fallback.children };
+        }
+      }
+      return item;
+    })
+  : fallbackMainNav;
 
 const currentPath = Astro.url.pathname;
 ---
