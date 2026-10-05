@@ -1,6 +1,6 @@
 ---
 interface Props {
-  variant?: 'default' | 'alternate' | 'dark' | 'light';
+  variant?: 'default' | 'alternate' | 'dark' | 'light' | 'primary';
   size?: 'normal' | 'narrow' | 'wide' | 'large';
   class?: string;
 }
@@ -11,7 +11,10 @@ const {
   class: className = '' 
 } = Astro.props;
 
-const bgStyles = variant === 'alternate' ? 'bg-[var(--color-surface-alt)]' : variant === 'dark' ? 'bg-[var(--color-brand-navy)] text-white' : variant === 'light' ? 'bg-slate-50' : 'bg-white';
+const bgStyles = variant === 'alternate' ? 'bg-[var(--color-surface-alt)]' : 
+                 variant === 'dark' ? 'bg-[var(--color-brand-navy)] text-white' : 
+                 variant === 'primary' ? 'bg-[var(--color-brand-purple)] text-white' : 
+                 variant === 'light' ? 'bg-slate-50' : 'bg-white';
 const paddingStyles = size === 'large' ? 'py-20 md:py-32' : 'py-16 md:py-24';
 
 let containerSize = "max-w-7xl";

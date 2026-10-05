@@ -275,20 +275,20 @@ const founder = getPublishedTeam().find(m => m.id === 'ansar-ahammad');
   </Section>
 
   <!-- 8. CAPABILITY / TRUST -->
-  <Section variant="dark" size="large" class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/5 to-transparent opacity-50"></div>
+  <Section variant="primary" size="large" class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent opacity-50"></div>
     <div class="max-w-4xl mx-auto text-center relative z-10">
       <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight text-white leading-tight">
         {c.finalCta.heading}
       </h2>
-      <p class="text-xl text-slate-300 font-light mb-12 leading-relaxed max-w-2xl mx-auto">
+      <p class="text-xl text-white/90 font-light mb-12 leading-relaxed max-w-2xl mx-auto">
         {c.finalCta.description}
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button href={c.finalCta.primaryCta.url} variant="primary" size="large" class="bg-[var(--color-brand-purple)] text-white border-transparent hover:bg-purple-600">
+        <Button href={c.finalCta.primaryCta.url} variant="inverse" size="large" class="text-[var(--color-brand-purple)]">
           {c.finalCta.primaryCta.label}
         </Button>
-        <Button href={c.finalCta.secondaryCta.url} variant="outline" size="large" class="border-white/20 text-white hover:bg-white/10">
+        <Button href={c.finalCta.secondaryCta.url} variant="inverse-outline" size="large">
           {c.finalCta.secondaryCta.label}
         </Button>
       </div>
