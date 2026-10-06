@@ -15,10 +15,11 @@ requirePermission(user.role as any, 'quotations', 'create');
 
 const db = getDb((env as any).DB);
 const allClients = await db.select().from(clients).orderBy(clients.name);
-const allLeads = await db.select().from(leads).orderBy(leads.companyName);
+const allLeads = await db.select().from(leads).orderBy(leads.company);
 const allProjects = await db.select().from(projects).orderBy(projects.name);
 
 let errors: Record<string, string> = {};
+const defaultClientId = Astro.url.searchParams.get('clientId') || '';
 
 if (Astro.request.method === 'POST') {
   try {
@@ -36,9 +37,9 @@ if (Astro.request.method === 'POST') {
     const tax = Math.round(parseFloat(data.get('tax')?.toString() || '0') * 100);
     const total = subtotal - discount + tax;
 
-    const [newQuotation] = await db.insert(quotations).values({
+    const [newQuotation] = await db.insert(quotations).values({ id: crypto.randomUUID(),
       quotationNumber: qNum,
-      clientId: data.get('clientId')?.toString() || '',
+      clientId: Astro.url.searchParams.get('clientId') || data.get('clientId')?.toString() || '',
       leadId: data.get('leadId')?.toString() || null,
       projectId: data.get('projectId')?.toString() || null,
       currency: data.get('currency')?.toString() || 'USD',
@@ -55,7 +56,7 @@ if (Astro.request.method === 'POST') {
 
     if (items.length > 0) {
       const qItems = items.map((item: any, i: number) => ({
-        quotationId: newQuotation.id,
+        id: crypto.randomUUID(), quotationId: newQuotation.id,
         description: item.description,
         quantity: parseFloat(item.quantity),
         unitPrice: Math.round(parseFloat(item.unitPrice) * 100),
@@ -66,8 +67,8 @@ if (Astro.request.method === 'POST') {
     }
 
     return Astro.redirect('/admin/quotations');
-  } catch (e: any) {
-    errors.system = e.message;
+  } catch (e) {
+    errors.system = (e as Error).message;
   }
 }
 ---
@@ -86,7 +87,7 @@ if (Astro.request.method === 'POST') {
           <label class="block text-sm font-medium text-slate-700 mb-1">Client *</label>
           <select name="clientId" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
             <option value="">Select a client...</option>
-            {allClients.map((c) => <option value={c.id}>{c.name}</option>)}
+            {allClients.map((c) => <option value={c.id} selected={c.id === defaultClientId}>{c.name}</option>)}
           </select>
         </div>
         <div>
@@ -168,7 +169,7 @@ if (Astro.request.method === 'POST') {
   </div>
 </AdminLayout>
 
-<script>
+<script is:inline>
   let items = [{ description: '', quantity: 1, unitPrice: 0 }];
   
   function renderItems() {
@@ -193,33 +194,33 @@ if (Astro.request.method === 'POST') {
     });
 
     // Update totals
-    document.getElementById('displaySubtotal')!.textContent = subtotal.toFixed(2);
+    document.getElementById('displaySubtotal').textContent = subtotal.toFixed(2);
     
-    const discount = parseFloat((document.getElementById('inputDiscount') as HTMLInputElement).value) || 0;
-    const tax = parseFloat((document.getElementById('inputTax') as HTMLInputElement).value) || 0;
+    const discount = parseFloat(document.getElementById('inputDiscount').value) || 0;
+    const tax = parseFloat(document.getElementById('inputTax').value) || 0;
     const total = subtotal - discount + tax;
-    document.getElementById('displayTotal')!.textContent = total.toFixed(2);
+    document.getElementById('displayTotal').textContent = total.toFixed(2);
     
     // Update hidden JSON
-    (document.getElementById('itemsJson') as HTMLInputElement).value = JSON.stringify(items);
+    document.getElementById('itemsJson').value = JSON.stringify(items);
     
     attachEvents();
   }
 
   function attachEvents() {
-    document.querySelectorAll('.item-desc').forEach(el => el.addEventListener('input', (e: any) => {
+    document.querySelectorAll('.item-desc').forEach(el => el.addEventListener('input', (e) => {
       items[e.target.dataset.index].description = e.target.value;
-      (document.getElementById('itemsJson') as HTMLInputElement).value = JSON.stringify(items);
+      document.getElementById('itemsJson').value = JSON.stringify(items);
     }));
-    document.querySelectorAll('.item-qty').forEach(el => el.addEventListener('input', (e: any) => {
+    document.querySelectorAll('.item-qty').forEach(el => el.addEventListener('input', (e) => {
       items[e.target.dataset.index].quantity = parseFloat(e.target.value) || 0;
       renderItems();
     }));
-    document.querySelectorAll('.item-price').forEach(el => el.addEventListener('input', (e: any) => {
+    document.querySelectorAll('.item-price').forEach(el => el.addEventListener('input', (e) => {
       items[e.target.dataset.index].unitPrice = parseFloat(e.target.value) || 0;
       renderItems();
     }));
-    document.querySelectorAll('.del-btn').forEach(el => el.addEventListener('click', (e: any) => {
+    document.querySelectorAll('.del-btn').forEach(el => el.addEventListener('click', (e) => {
       items.splice(e.target.dataset.index, 1);
       renderItems();
     }));
@@ -235,3 +236,9 @@ if (Astro.request.method === 'POST') {
 
   renderItems();
 </script>
+
+
+
+
+
+

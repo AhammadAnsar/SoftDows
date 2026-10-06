@@ -1,4 +1,4 @@
-﻿import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { id, timestamps, money } from './utils';
 import { clients, leads } from './crm';
 import { projects } from './agency';
@@ -50,6 +50,9 @@ export const invoices = sqliteTable('invoices', {
   total: money('total').notNull().default(0),
   amountPaid: money('amount_paid').notNull().default(0),
   balanceDue: money('balance_due').notNull().default(0),
+  isRecurring: integer('is_recurring', { mode: 'boolean' }).default(false),
+  billingCycle: text('billing_cycle', { enum: ['monthly', 'quarterly', 'yearly', 'none'] }).default('none'),
+  nextBillingDate: integer('next_billing_date', { mode: 'timestamp' }),
   notes: text('notes'),
   ...timestamps
 });
@@ -79,3 +82,4 @@ export const payments = sqliteTable('payments', {
   recordedById: text('recorded_by_id').references(() => user.id, { onDelete: 'set null' }),
   ...timestamps
 });
+

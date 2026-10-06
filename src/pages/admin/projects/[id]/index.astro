@@ -1,133 +1,230 @@
 ---
+export const prerender = false;
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import { getDb } from '../../../../lib/db';
-import { projects, projectMilestones, projectMembers } from '../../../../lib/db/schema/agency'; import { clients } from '../../../../lib/db/schema/crm'; import { user } from '../../../../lib/db/schema/auth';
-import { getAuth } from '../../../../lib/auth';
+import { projects, projectMilestones, projectMembers, projectUpdates } from '../../../../lib/db/schema/agency'; 
+import { invoices, quotations } from '../../../../lib/db/schema/billing';
+import { clients } from '../../../../lib/db/schema/crm'; 
+import { user as userSchema } from '../../../../lib/db/schema/auth';
 import { env } from 'cloudflare:workers';
 import { eq, desc } from 'drizzle-orm';
 import { requirePermission } from '../../../../lib/auth/authorization';
+import AdminIcon from '../../../../components/admin/AdminIcon.astro';
+import StatusBadge from '../../../../components/admin/StatusBadge.astro';
 
-const _env = env as any;
-const auth = getAuth(_env);
-const session = await auth.api.getSession({ headers: Astro.request.headers });
-if (!session) return Astro.redirect('/login');
-requirePermission(session.user.role as any, 'projects', 'read');
-const canEdit = requirePermission(session.user.role as any, 'projects', 'update');
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+requirePermission(user.role as any, 'projects', 'read');
+const canEdit = requirePermission(user.role as any, 'projects', 'update');
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect('/admin/projects');
 
-let error = '';
-let success = '';
+const db = getDb((env as any).DB);
+
+const [project] = await db.select().from(projects).where(eq(projects.id, id));
+if (!project) return new Response('Project not found', { status: 404 });
+
+const [client] = await db.select().from(clients).where(eq(clients.id, project.clientId));
+
+const relatedInvoices = await db.select().from(invoices).where(eq(invoices.projectId, id)).orderBy(desc(invoices.issueDate));
+const relatedQuotations = await db.select().from(quotations).where(eq(quotations.projectId, id)).orderBy(desc(quotations.issueDate));
+const milestones = await db.select().from(projectMilestones).where(eq(projectMilestones.projectId, id)).orderBy(projectMilestones.dueDate);
+
+const statusColors: Record<string, string> = {
+  active: 'bg-blue-50 text-blue-700 border-blue-200',
+  completed: 'bg-green-50 text-green-700 border-green-200',
+  on_hold: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  cancelled: 'bg-slate-100 text-slate-600 border-slate-200'
+};
+
+const formatStatus = (s: string) => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+let actionError = '';
+let actionSuccess = '';
 
 if (Astro.request.method === 'POST' && canEdit) {
   try {
     const data = await Astro.request.formData();
-    const action = data.get('action');
+    const action = data.get('action')?.toString();
     
-    const db = getDb((env as any).DB);
-if (action === 'add_milestone') {
-      await db.insert(projectMilestones).values({
-        id: crypto.randomUUID(),
-        projectId: id,
-        title: data.get('title')?.toString() || 'Untitled',
-        status: data.get('status')?.toString() as any || 'pending',
-      });
-      success = 'Milestone added.';
-    } else if (action === 'update_status') {
-       await db.update(projects).set({
-         status: data.get('status')?.toString() as any
-       }).where(eq(projects.id, id));
-       success = 'Project status updated.';
-    } else if (action === 'assign_member') {
-       const userId = data.get('userId')?.toString();
-       if (userId) {
-         await db.insert(projectMembers).values({
-           id: crypto.randomUUID(),
-           projectId: id,
-           userId: userId,
-           role: 'member'
-         });
-         success = 'Staff assigned.';
-       }
+    if (action === 'delete') {
+      requirePermission(user.role as any, 'projects', 'delete');
+      await db.delete(projects).where(eq(projects.id, id));
+      return Astro.redirect('/admin/projects');
     }
-  } catch(e: any) {
-    error = e.message;
+  } catch (e: any) {
+    actionError = e.message;
   }
 }
-
-const db = getDb((env as any).DB);
-const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1).then(r => r[0]);
-if (!project) return new Response('Not found', { status: 404 });
-
-const client = await db.select().from(clients).where(eq(clients.id, project.clientId)).limit(1).then(r => r[0]);
-const milestones = await db.select().from(projectMilestones).where(eq(projectMilestones.projectId, id)).orderBy(projectMilestones.displayOrder);
-const members = await db.select({
-  name: user.name, role: projectMembers.role
-}).from(projectMembers).innerJoin(user, eq(projectMembers.userId, user.id)).where(eq(projectMembers.projectId, id));
-const availableStaff = await db.select().from(user).where(eq(user.role, 'admin')); // simplified
-
 ---
-<AdminLayout title={`Project: ${project.name}`} user={session.user as any}>
-  <div class="p-6 max-w-7xl mx-auto grid grid-cols-3 gap-6">
-    <div class="col-span-2 space-y-6">
-       <h1 class="text-2xl font-bold">{project.name}</h1>
-       {error && <div class="p-4 bg-red-50 text-red-600 rounded">{error}</div>}
-       {success && <div class="p-4 bg-green-50 text-green-600 rounded">{success}</div>}
-       
-       <div class="bg-white p-6 border rounded shadow-sm">
-         <h2 class="font-bold mb-4">Milestones</h2>
-         <ul class="divide-y">
-           {milestones.map(m => (
-             <li class="py-2 flex justify-between">
-               <span>{m.title}</span>
-               <span class="text-sm bg-slate-100 px-2 rounded">{m.status}</span>
-             </li>
-           ))}
-         </ul>
-         {canEdit && (
-           <form method="POST" class="mt-4 flex gap-2">
-             <input type="hidden" name="action" value="add_milestone"/>
-             <input type="text" name="title" required placeholder="Milestone Title" class="border p-2 rounded"/>
-             <button type="submit" class="bg-[#242a56] text-white px-4 rounded">Add</button>
-           </form>
-         )}
-       </div>
-    </div>
+<AdminLayout title={`Project: ${project.name}`} user={user as any}>
+  <div class="p-6 max-w-7xl mx-auto pb-24 space-y-6">
     
-    <div class="space-y-6">
-       <div class="bg-white p-6 border rounded shadow-sm">
-         <h2 class="font-bold mb-2">Details</h2>
-         <p class="text-sm">Client: {client?.name}</p>
-         <p class="text-sm">Status: {project.status}</p>
-         {canEdit && (
-            <form method="POST" class="mt-2 flex gap-2">
-              <input type="hidden" name="action" value="update_status"/>
-              <select name="status" class="border p-1 rounded text-sm">
-                <option value="planning">Planning</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-              </select>
-              <button type="submit" class="bg-slate-200 text-sm px-2 rounded">Update</button>
-            </form>
-         )}
-       </div>
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <a href="/admin/projects" class="text-slate-400 hover:text-slate-600">
+            <AdminIcon name="arrow-left" class="w-5 h-5" />
+          </a>
+          <h1 class="text-2xl font-bold text-[#192040]">{project.name}</h1>
+          <span class={`px-2.5 py-1 rounded-full text-xs font-bold border ${statusColors[project.status] || statusColors.on_hold}`}>
+            {formatStatus(project.status)}
+          </span>
+        </div>
+        <div class="flex items-center gap-4 text-sm text-slate-500 ml-8">
+          <span class="flex items-center gap-1"><AdminIcon name="building" class="w-4 h-4" /> <a href={`/admin/clients/${client?.id}`} class="hover:text-[#5568d3] hover:underline font-medium">{client?.name || 'Unknown Client'}</a></span>
+          <span>•</span>
+          <span>Started {new Date(project.startDate).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        {canEdit && (
+          <a href={`/admin/projects/${project.id}/edit`} class="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+            <AdminIcon name="edit" class="w-4 h-4" />
+            Edit Project
+          </a>
+        )}
+      </div>
+    </div>
 
-       <div class="bg-white p-6 border rounded shadow-sm">
-         <h2 class="font-bold mb-2">Team</h2>
-         <ul class="text-sm divide-y">
-           {members.map(m => <li class="py-1">{m.name}</li>)}
-         </ul>
-         {canEdit && (
-            <form method="POST" class="mt-2 flex gap-2">
-              <input type="hidden" name="action" value="assign_member"/>
-              <select name="userId" class="border p-1 rounded text-sm">
-                {availableStaff.map(s => <option value={s.id}>{s.name}</option>)}
-              </select>
-              <button type="submit" class="bg-slate-200 text-sm px-2 rounded">Assign</button>
-            </form>
-         )}
-       </div>
+    {actionError && (
+      <div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 font-medium text-sm">
+        {actionError}
+      </div>
+    )}
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+      
+      <!-- Main Content -->
+      <div class="xl:col-span-2 space-y-6 lg:space-y-8">
+        
+        <!-- Overview -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+          <div class="px-6 py-4 border-b border-[#e2e8f0] bg-[#f8fafc] flex justify-between items-center">
+            <h2 class="text-base font-bold text-[#242a56] flex items-center gap-2">
+              <AdminIcon name="chart-bar" class="w-5 h-5 text-[#5568d3]" />
+              Project Overview
+            </h2>
+          </div>
+          <div class="p-6">
+            <div class="prose prose-sm max-w-none text-[#334155] whitespace-pre-wrap">
+              {project.description || <span class="italic text-slate-400">No description provided.</span>}
+            </div>
+          </div>
+          <div class="border-t border-slate-100 p-6 bg-slate-50/50 flex flex-wrap gap-6">
+             <div>
+                <p class="text-xs font-bold text-[#8a96d1] uppercase tracking-wider mb-1">Target End Date</p>
+                <p class="text-sm text-[#242a56] font-medium">{project.targetEndDate ? new Date(project.targetEndDate).toLocaleDateString() : 'N/A'}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-[#8a96d1] uppercase tracking-wider mb-1">Budget</p>
+                <p class="text-sm text-[#242a56] font-medium">{project.currency} {(project.budget / 100).toFixed(2)}</p>
+              </div>
+          </div>
+        </div>
+
+        <!-- Milestones -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+          <div class="px-6 py-4 border-b border-[#e2e8f0] bg-[#f8fafc] flex justify-between items-center">
+            <h2 class="text-base font-bold text-[#242a56] flex items-center gap-2">
+              <AdminIcon name="check-circle" class="w-5 h-5 text-[#10b981]" />
+              Milestones
+            </h2>
+          </div>
+          {milestones.length > 0 ? (
+            <div class="divide-y divide-slate-100">
+              {milestones.map(m => (
+                <div class="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+                  <div>
+                    <h3 class="text-sm font-bold text-[#242a56]">{m.title}</h3>
+                    <p class="text-xs text-slate-500 mt-1">{m.description}</p>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">Due: {new Date(m.dueDate).toLocaleDateString()}</span>
+                    <span class={`text-xs font-bold uppercase px-2 py-1 rounded ${m.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      {m.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="p-6 text-sm text-slate-500 italic">No milestones defined for this project.</div>
+          )}
+        </div>
+
+      </div>
+
+      <!-- Sidebar Content -->
+      <div class="space-y-6 lg:space-y-8">
+        
+        <!-- Invoices & Billing -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+          <div class="px-6 py-4 border-b border-[#e2e8f0] bg-[#f8fafc] flex justify-between items-center">
+            <h2 class="text-base font-bold text-[#242a56]">Project Invoices</h2>
+            <a href={`/admin/invoices/new?projectId=${project.id}&clientId=${project.clientId}`} class="text-[#5568d3] hover:underline text-sm font-medium">+ Add</a>
+          </div>
+          {relatedInvoices.length > 0 ? (
+            <div class="divide-y divide-slate-100">
+              {relatedInvoices.map(inv => (
+                <div class="p-4 flex items-center justify-between hover:bg-slate-50">
+                  <div>
+                    <a href={`/admin/invoices/${inv.id}/edit`} class="text-sm font-bold text-[#6878d6] hover:underline">{inv.invoiceNumber}</a>
+                    <p class="text-xs text-slate-500 mt-0.5">{inv.currency} {(inv.total / 100).toFixed(2)}</p>
+                  </div>
+                  <span class="text-xs font-bold uppercase px-2 py-1 bg-slate-100 rounded text-slate-600">{inv.status}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="p-4 text-sm text-slate-500 italic">No invoices linked.</div>
+          )}
+        </div>
+        
+        <!-- Quotations -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+          <div class="px-6 py-4 border-b border-[#e2e8f0] bg-[#f8fafc] flex justify-between items-center">
+            <h2 class="text-base font-bold text-[#242a56]">Quotations</h2>
+            <a href={`/admin/quotations/new?projectId=${project.id}&clientId=${project.clientId}`} class="text-[#5568d3] hover:underline text-sm font-medium">+ Add</a>
+          </div>
+          {relatedQuotations.length > 0 ? (
+            <div class="divide-y divide-slate-100">
+              {relatedQuotations.map(quote => (
+                <div class="p-4 flex items-center justify-between hover:bg-slate-50">
+                  <div>
+                    <a href={`/admin/quotations/${quote.id}/edit`} class="text-sm font-bold text-[#6878d6] hover:underline">{quote.quotationNumber}</a>
+                    <p class="text-xs text-slate-500 mt-0.5">{quote.currency} {(quote.total / 100).toFixed(2)}</p>
+                  </div>
+                  <span class="text-xs font-bold uppercase px-2 py-1 bg-slate-100 rounded text-slate-600">{quote.status}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="p-4 text-sm text-slate-500 italic">No quotations linked.</div>
+          )}
+        </div>
+
+        <!-- Danger Zone -->
+        {canEdit && (
+          <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+             <div class="px-6 py-4 border-b border-red-100 bg-red-50">
+              <h2 class="text-base font-bold text-red-700">Danger Zone</h2>
+            </div>
+            <div class="p-6">
+              <form method="POST" onsubmit="return confirm('Are you sure you want to completely delete this project and all its data? This action cannot be undone.');">
+                <input type="hidden" name="action" value="delete" />
+                <button type="submit" class="w-full px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg text-sm hover:bg-red-200 transition-colors">
+                  Delete Project
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+      </div>
+      
     </div>
   </div>
 </AdminLayout>

@@ -15,6 +15,7 @@ if (!session) return Astro.redirect('/login');
 requirePermission(session.user.role as any, 'projects', 'create');
 
 let error = '';
+const defaultClientId = Astro.url.searchParams.get('clientId') || '';
 
 if (Astro.request.method === 'POST') {
   try {
@@ -90,3 +91,4 @@ const allClients = await db.select({ id: clients.id, name: clients.name }).from(
     </form>
   </div>
 </AdminLayout>
+

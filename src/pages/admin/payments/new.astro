@@ -50,7 +50,7 @@ if (Astro.request.method === 'POST') {
     if (!formData.amount || isNaN(parseFloat(formData.amount))) errors.amount = 'Valid amount is required';
     
     if (Object.keys(errors).length === 0) {
-      await db.insert(payments).values({
+      await db.insert(payments).values({ id: crypto.randomUUID(),
         clientId: formData.clientId,
         invoiceId: formData.invoiceId,
         amount: Math.round(parseFloat(formData.amount) * 100),
@@ -173,5 +173,6 @@ if (Astro.request.method === 'POST') {
     </form>
   </div>
 </AdminLayout>
+
 
 
