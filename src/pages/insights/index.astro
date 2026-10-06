@@ -8,7 +8,6 @@ const items = await getCollection('insights');
 const title = "Insights | SoftDows";
 const description = "Technical insights and thoughts from our engineering team.";
 ---
-export const prerender = true;
 <MainLayout title={title} description={description}>
   <div class="bg-white px-6 py-24 sm:py-32 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -40,5 +39,6 @@ export const prerender = true;
     </div>
   </div>
 </MainLayout>
+
 
 

@@ -15,7 +15,6 @@ export function getStaticPaths() {
 
 const { product } = Astro.props;
 ---
-export const prerender = true;
 <MainLayout title={product.seoTitle || product.name} description={product.seoDescription || product.shortDescription || undefined}>
   <Section variant="light" size="large" class="pt-28 pb-16 md:pt-40 md:pb-24 bg-slate-50 border-b border-slate-100">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
@@ -38,4 +37,5 @@ export const prerender = true;
     </div>
   </Section>
 </MainLayout>
+
 

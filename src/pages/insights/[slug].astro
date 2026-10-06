@@ -15,7 +15,6 @@ const { entry } = Astro.props;
 import { render } from 'astro:content';
 const { Content } = await render(entry);
 ---
-export const prerender = true;
 <MainLayout title={`${entry.data.title} | SoftDows Insights`} description={entry.data.description}>
   <article class="px-6 py-24 sm:py-32 lg:px-8 bg-white min-h-screen">
     <div class="mx-auto max-w-3xl">
@@ -32,6 +31,7 @@ export const prerender = true;
     </div>
   </article>
 </MainLayout>
+
 
 
 

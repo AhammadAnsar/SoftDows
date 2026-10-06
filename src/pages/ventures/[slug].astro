@@ -28,7 +28,6 @@ const currentTheme = {
   features: venture.keyFocus.map(focus => ({ title: focus, desc: 'Core operational focus area.', icon: icons.cube }))
 };
 ---
-export const prerender = true;
 <MainLayout title={venture.seoTitle || venture.brandName} description={venture.seoDescription || venture.shortDescription}>
   <section class={`relative overflow-hidden pt-24 pb-32 bg-gradient-to-br ${currentTheme.gradient} text-white`}>
     <div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:40px_40px]"></div>
@@ -112,4 +111,5 @@ export const prerender = true;
     </div>
   </section>
 </MainLayout>
+
 
