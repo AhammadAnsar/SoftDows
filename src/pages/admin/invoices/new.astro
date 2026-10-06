@@ -77,11 +77,10 @@ if (Astro.request.method === 'POST') {
       const taxAmount = Math.round(subAfterDiscount * (taxPercent / 100));
       const total = subAfterDiscount + taxAmount;
 
-      const [newInv] = await db.insert(invoices).values({ id: crypto.randomUUID(),
+      const invData: any = { 
+        id: crypto.randomUUID(),
         invoiceNumber: formData.invoiceNumber,
         clientId: formData.clientId,
-        projectId: formData.projectId || null,
-        quotationId: formData.quotationId || null,
         currency: formData.currency,
         issueDate: new Date(formData.issueDate),
         dueDate: new Date(formData.dueDate),
@@ -91,11 +90,15 @@ if (Astro.request.method === 'POST') {
         tax: taxAmount,
         total,
         balanceDue: total,
-        notes: formData.notes,
         isRecurring: formData.isRecurring,
-        billingCycle: formData.billingCycle as any,
-        nextBillingDate: formData.nextBillingDate ? new Date(formData.nextBillingDate) : null
-      }).returning({ id: invoices.id });
+        billingCycle: formData.billingCycle as any
+      };
+      if (formData.projectId) invData.projectId = formData.projectId;
+      if (formData.quotationId) invData.quotationId = formData.quotationId;
+      if (formData.notes) invData.notes = formData.notes;
+      if (formData.nextBillingDate) invData.nextBillingDate = new Date(formData.nextBillingDate);
+
+      const [newInv] = await db.insert(invoices).values(invData).returning({ id: invoices.id });
 
       if (items.length > 0) {
         const iItems = items.map((item: any, i: number) => ({

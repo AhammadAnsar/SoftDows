@@ -37,22 +37,25 @@ if (Astro.request.method === 'POST') {
     const tax = Math.round(parseFloat(data.get('tax')?.toString() || '0') * 100);
     const total = subtotal - discount + tax;
 
-    const [newQuotation] = await db.insert(quotations).values({ id: crypto.randomUUID(),
+    const qData: any = { 
+      id: crypto.randomUUID(),
       quotationNumber: qNum,
       clientId: Astro.url.searchParams.get('clientId') || data.get('clientId')?.toString() || '',
-      leadId: data.get('leadId')?.toString() || null,
-      projectId: data.get('projectId')?.toString() || null,
       currency: data.get('currency')?.toString() || 'USD',
       issueDate: new Date(data.get('issueDate')?.toString() || new Date()),
-      expiryDate: data.get('expiryDate') ? new Date(data.get('expiryDate')?.toString()!) : null,
       status: data.get('status') as any || 'draft',
       subtotal,
       discount,
       tax,
       total,
-      terms: data.get('terms')?.toString(),
-      notes: data.get('notes')?.toString(),
-    }).returning({ id: quotations.id });
+    };
+    if (data.get('leadId')) qData.leadId = data.get('leadId')?.toString();
+    if (data.get('projectId')) qData.projectId = data.get('projectId')?.toString();
+    if (data.get('expiryDate')) qData.expiryDate = new Date(data.get('expiryDate')?.toString()!);
+    if (data.get('terms')) qData.terms = data.get('terms')?.toString();
+    if (data.get('notes')) qData.notes = data.get('notes')?.toString();
+
+    const [newQuotation] = await db.insert(quotations).values(qData).returning({ id: quotations.id });
 
     if (items.length > 0) {
       const qItems = items.map((item: any, i: number) => ({

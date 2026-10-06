@@ -83,20 +83,22 @@ if (Astro.request.method === 'POST') {
       const taxAmount = Math.round(parseFloat(formData.tax) * 100);
       const total = subtotal - discount + taxAmount;
 
-      await db.update(quotations).set({
+      const qData: any = {
         quotationNumber: formData.quotationNumber,
         clientId: formData.clientId,
-        projectId: formData.projectId || null,
         currency: formData.currency,
         issueDate: new Date(formData.issueDate),
-        expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : null,
         status: formData.status as any,
         subtotal,
         discount,
         tax: taxAmount,
-        total,
-        notes: formData.notes
-      }).where(eq(quotations.id, id));
+        total
+      };
+      if (formData.projectId) qData.projectId = formData.projectId;
+      if (formData.expiryDate) qData.expiryDate = new Date(formData.expiryDate);
+      if (formData.notes) qData.notes = formData.notes;
+
+      await db.update(quotations).set(qData).where(eq(quotations.id, id));
 
       await db.delete(quotationItems).where(eq(quotationItems.quotationId, id));
 

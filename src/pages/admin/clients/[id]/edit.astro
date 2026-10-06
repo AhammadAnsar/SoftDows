@@ -38,13 +38,15 @@ if (Astro.request.method === 'POST') {
     if (Object.keys(errors).length === 0) {
       const auditId = crypto.randomUUID();
 
+      const clientData: any = {
+        name: clientName,
+        status: status as any,
+        updatedAt: new Date()
+      };
+      if (internalNotes) clientData.notes = internalNotes;
+
       await db.batch([
-        db.update(clients).set({
-          name: clientName,
-          status: status as any,
-          notes: internalNotes || null,
-          updatedAt: new Date()
-        }).where(eq(clients.id, client.id)),
+        db.update(clients).set(clientData).where(eq(clients.id, client.id)),
         
         db.insert(auditLogs).values({
           id: auditId,

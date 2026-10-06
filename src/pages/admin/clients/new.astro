@@ -58,22 +58,26 @@ if (Astro.request.method === 'POST') {
       const contactId = crypto.randomUUID();
       const auditId = crypto.randomUUID();
 
+      const clientData: any = {
+        id: clientId,
+        name: formData.clientName,
+        status: formData.status as any
+      };
+      if (formData.internalNotes) clientData.notes = formData.internalNotes;
+
+      const contactData: any = {
+        id: contactId,
+        clientId: clientId,
+        firstName: formData.contactFirstName,
+        lastName: formData.contactLastName,
+        email: formData.email || '',
+        isPrimary: true
+      };
+      if (formData.phone) contactData.phone = formData.phone;
+
       await db.batch([
-        db.insert(clients).values({
-          id: clientId,
-          name: formData.clientName,
-          status: formData.status as any,
-          notes: formData.internalNotes || null
-        }),
-        db.insert(clientContacts).values({
-          id: contactId,
-          clientId: clientId,
-          firstName: formData.contactFirstName,
-          lastName: formData.contactLastName,
-          email: formData.email || '', // Email is required in DB schema? Wait. Let me check schema!
-          phone: formData.phone || null,
-          isPrimary: true
-        }),
+        db.insert(clients).values(clientData),
+        db.insert(clientContacts).values(contactData),
         db.insert(auditLogs).values({
           id: auditId,
           action: 'client_created',

@@ -94,11 +94,9 @@ if (Astro.request.method === 'POST') {
       const taxAmount = Math.round(subAfterDiscount * (taxPercent / 100));
       const total = subAfterDiscount + taxAmount;
 
-      await db.update(invoices).set({
+      const invData: any = {
         invoiceNumber: formData.invoiceNumber,
         clientId: formData.clientId,
-        projectId: formData.projectId || null,
-        quotationId: formData.quotationId || null,
         currency: formData.currency,
         issueDate: new Date(formData.issueDate),
         dueDate: new Date(formData.dueDate),
@@ -108,11 +106,15 @@ if (Astro.request.method === 'POST') {
         tax: taxAmount,
         total,
         balanceDue: total - existingInvoice.amountPaid,
-        notes: formData.notes,
         isRecurring: formData.isRecurring,
-        billingCycle: formData.billingCycle as any,
-        nextBillingDate: formData.nextBillingDate ? new Date(formData.nextBillingDate) : null
-      }).where(eq(invoices.id, id));
+        billingCycle: formData.billingCycle as any
+      };
+      if (formData.projectId) invData.projectId = formData.projectId;
+      if (formData.quotationId) invData.quotationId = formData.quotationId;
+      if (formData.notes) invData.notes = formData.notes;
+      if (formData.nextBillingDate) invData.nextBillingDate = new Date(formData.nextBillingDate);
+
+      await db.update(invoices).set(invData).where(eq(invoices.id, id));
 
       await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, id));
 

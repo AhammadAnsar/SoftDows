@@ -61,6 +61,16 @@ if (Astro.request.method === 'POST') {
           const contactId = crypto.randomUUID();
           const auditId = crypto.randomUUID();
 
+          const contactData: any = {
+            id: contactId,
+            clientId: clientId,
+            firstName: contactFirstName,
+            lastName: contactLastName,
+            email: contactEmail,
+            isPrimary: true
+          };
+          if (contactPhone) contactData.phone = contactPhone;
+
           // 2. Transaction via batch
           await db.batch([
             db.insert(clients).values({
@@ -68,15 +78,7 @@ if (Astro.request.method === 'POST') {
               name: clientName,
             status: 'active'
           }),
-          db.insert(clientContacts).values({
-            id: contactId,
-            clientId: clientId,
-            firstName: contactFirstName,
-            lastName: contactLastName,
-            email: contactEmail,
-            phone: contactPhone || null,
-            isPrimary: true
-          }),
+          db.insert(clientContacts).values(contactData),
           db.update(leads)
             .set({ convertedClientId: clientId })
             .where(eq(leads.id, lead.id)),

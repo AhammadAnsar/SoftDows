@@ -61,18 +61,20 @@ if (Astro.request.method === 'POST') {
       const db = getDb((env as any).DB);
       const newId = crypto.randomUUID();
 
-      const inserted = await db.insert(leads).values({
+      const leadData: any = {
         id: newId,
         name: formData.name,
         email: formData.email,
-        company: formData.company || null,
-        phone: formData.phone || null,
         requestedService: formData.requestedService,
-        budgetRange: formData.budgetRange || null,
-        description: formData.description || null,
-        internalNotes: formData.internalNotes || null,
         status: 'new'
-      }).returning({ id: leads.id });
+      };
+      if (formData.company) leadData.company = formData.company;
+      if (formData.phone) leadData.phone = formData.phone;
+      if (formData.budgetRange) leadData.budgetRange = formData.budgetRange;
+      if (formData.description) leadData.description = formData.description;
+      if (formData.internalNotes) leadData.internalNotes = formData.internalNotes;
+
+      const inserted = await db.insert(leads).values(leadData).returning({ id: leads.id });
       
       const leadId = inserted[0].id;
 
