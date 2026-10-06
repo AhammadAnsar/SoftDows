@@ -4,8 +4,8 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import { getDb } from '../../../../lib/db';
 import { clients, clientContacts, leads } from '../../../../lib/db/schema/crm';
 import { projects } from '../../../../lib/db/schema/agency';
-import { invoices, quotations, payments } from '../../../../lib/db/schema/billing';
-import { eq, desc } from 'drizzle-orm';
+import { invoices, invoiceItems, quotations, quotationItems, payments } from '../../../../lib/db/schema/billing';
+import { eq, desc, inArray } from 'drizzle-orm';
 import AdminIcon from '../../../../components/admin/AdminIcon.astro';
 import { requirePermission } from '../../../../lib/auth/authorization';
 import { env } from 'cloudflare:workers';
@@ -53,6 +53,20 @@ if (Astro.request.method === 'POST' && canEdit) {
     const action = data.get('action')?.toString();
 
     if (action === 'delete_client') {
+      // Manual cascade delete because of 'restrict' constraints in schema
+      await db.delete(clientContacts).where(eq(clientContacts.clientId, id as string));
+      await db.delete(payments).where(eq(payments.clientId, id as string));
+      await db.delete(invoiceItems).where(
+        inArray(invoiceItems.invoiceId, db.select({ id: invoices.id }).from(invoices).where(eq(invoices.clientId, id as string)))
+      );
+      await db.delete(invoices).where(eq(invoices.clientId, id as string));
+      await db.delete(quotationItems).where(
+        inArray(quotationItems.quotationId, db.select({ id: quotations.id }).from(quotations).where(eq(quotations.clientId, id as string)))
+      );
+      await db.delete(quotations).where(eq(quotations.clientId, id as string));
+      await db.delete(projects).where(eq(projects.clientId, id as string));
+      await db.update(leads).set({ convertedClientId: null as any }).where(eq(leads.convertedClientId, id as string));
+      
       await db.delete(clients).where(eq(clients.id, id as string));
       return Astro.redirect('/admin/clients');
     }

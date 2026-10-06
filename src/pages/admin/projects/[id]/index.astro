@@ -2,7 +2,8 @@
 export const prerender = false;
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import { getDb } from '../../../../lib/db';
-import { projects, projectMilestones, projectMembers, projectUpdates } from '../../../../lib/db/schema/agency'; 
+import { projects, projectMilestones, projectMembers, projectUpdates } from '../../../../lib/db/schema/agency';
+import { invoices, quotations } from '../../../../lib/db/schema/billing'; 
 import { invoices, quotations } from '../../../../lib/db/schema/billing';
 import { clients } from '../../../../lib/db/schema/crm'; 
 import { user as userSchema } from '../../../../lib/db/schema/auth';
@@ -49,6 +50,9 @@ if (Astro.request.method === 'POST' && canEdit) {
     const action = data.get('action')?.toString();
 
     if (action === 'delete_project') {
+      // Unlink invoices and quotations
+      await db.update(invoices).set({ projectId: null as any }).where(eq(invoices.projectId, id as string));
+      await db.update(quotations).set({ projectId: null as any }).where(eq(quotations.projectId, id as string));
       await db.delete(projects).where(eq(projects.id, id as string));
       return Astro.redirect('/admin/projects');
     }

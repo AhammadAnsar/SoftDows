@@ -230,10 +230,16 @@ if (Astro.request.method === 'POST') {
       <div>
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold">Line Items</h2>
-          <button type="button" id="addItemBtn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">Add Item</button>
+          <div class="flex gap-4 items-center">
+          <button type="button" id="addItemBtn" class="text-sm text-[#5568d3] font-medium hover:text-[#4557c2] flex items-center gap-1"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Add Custom Item</button>
+          
+          <select id="addServiceSelect" class="text-sm border border-slate-300 rounded px-2 py-1 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-[#5568d3]">
+            <option value="">+ Add Existing Service</option>
+            {servicesData.map((s: any) => <option value={s.title}>{s.title}</option>)}
+          </select>
+        </div>
         </div>
         
-        <datalist id="serviceOptions">{servicesData.map(s => <option value={s.title} />)}</datalist>
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <table class="w-full text-left">
             <thead class="bg-slate-50 border-b">
@@ -303,7 +309,7 @@ if (Astro.request.method === 'POST') {
       
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="p-2"><input type="text" class="w-full border border-slate-300 rounded px-2 py-1 item-desc" data-index="${index}" value="${item.description.replace(/"/g, '&quot;')}" required placeholder="Item description" list="serviceOptions" /></td>
+        <td class="p-2"><input type="text" class="w-full border border-slate-300 rounded px-2 py-1 item-desc" data-index="${index}" value="${item.description.replace(/"/g, '&quot;')}" required placeholder="Item description" /></td>
         <td class="p-2"><input type="number" step="0.01" class="w-full border border-slate-300 rounded px-2 py-1 item-qty text-right" data-index="${index}" value="${item.quantity}" required /></td>
         <td class="p-2"><input type="number" step="0.01" class="w-full border border-slate-300 rounded px-2 py-1 item-price text-right" data-index="${index}" value="${item.unitPrice}" required /></td>
         <td class="p-2 text-right font-medium text-slate-700">${lineTotal.toFixed(2)}</td>
@@ -338,12 +344,10 @@ if (Astro.request.method === 'POST') {
       items[e.target.dataset.index].description = e.target.value;
       document.getElementById('itemsJson').value = JSON.stringify(items);
     }));
-    document.querySelectorAll('.item-qty').forEach(el => el.addEventListener('input', (e) => {
-      items[e.target.dataset.index].quantity = parseFloat(e.target.value) || 0;
+    document.querySelectorAll('.item-qty').forEach(el => el.addEventListener('change', (e) => { items[e.target.dataset.index].quantity = parseFloat(e.target.value) || 0;
       renderItems();
     }));
-    document.querySelectorAll('.item-price').forEach(el => el.addEventListener('input', (e) => {
-      items[e.target.dataset.index].unitPrice = parseFloat(e.target.value) || 0;
+    document.querySelectorAll('.item-price').forEach(el => el.addEventListener('change', (e) => { items[e.target.dataset.index].unitPrice = parseFloat(e.target.value) || 0;
       renderItems();
     }));
     document.querySelectorAll('.del-btn').forEach(el => el.addEventListener('click', (e) => {
@@ -357,8 +361,8 @@ if (Astro.request.method === 'POST') {
     renderItems();
   });
 
-  document.getElementById('inputDiscount')?.addEventListener('input', renderItems);
-  document.getElementById('inputTax')?.addEventListener('input', renderItems);
+  document.getElementById('inputDiscount')?.addEventListener('change', renderItems);
+  document.getElementById('inputTax')?.addEventListener('change', renderItems);
 
   document.getElementById('isRecurringCheck')?.addEventListener('change', (e) => {
     const opts = document.getElementById('recurringOptions');
