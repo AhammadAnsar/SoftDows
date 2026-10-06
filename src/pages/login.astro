@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import MainLayout from '../layouts/MainLayout.astro';
 import { contactConfig } from '../config/site';
 
@@ -8,6 +9,7 @@ const seo = {
   noindex: true
 };
 ---
+export const prerender = true;
 
 <MainLayout title={seo.title} description={seo.description} noindex={seo.noindex}>
   <!-- Deep Space Canvas -->
@@ -248,3 +250,4 @@ const seo = {
     }
   });
 </script>
+

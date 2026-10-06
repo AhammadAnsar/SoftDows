@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import MainLayout from '../layouts/MainLayout.astro';
 import ConceptualVisual from '../components/ui/ConceptualVisual.astro';
 import { homeContent } from '../lib/content/home';
@@ -48,6 +49,7 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
   }
 };
 ---
+export const prerender = true;
 
 <MainLayout title={c.seo.title} description={c.seo.description}>
   
@@ -766,3 +768,4 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
   </section>
 
 </MainLayout>
+

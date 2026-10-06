@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Button from '../../components/ui/Button.astro';
@@ -10,6 +11,7 @@ import { teamData } from '../../lib/content/team';
 const c = aboutContent;
 const founderData = teamData['ansar-ahammad'];
 ---
+export const prerender = true;
 
 <MainLayout title={c.seo.title} description={c.seo.description}>
   <!-- 1. HERO SECTION -->
@@ -109,6 +111,7 @@ const founderData = teamData['ansar-ahammad'];
     </div>
   </Section>
 </MainLayout>
+
 
 
 

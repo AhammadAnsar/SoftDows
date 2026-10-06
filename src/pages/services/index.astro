@@ -1,10 +1,11 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 
-export const prerender = false;
+
 
 // Cloudflare Edge Caching Header (Zero Worker Compute Cost)
-Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
+
 
 // Hero Slider Data (3 High-Impact Service Slides)
 const heroSlides = [
@@ -134,6 +135,7 @@ const serviceGroups = [
   }
 ];
 ---
+export const prerender = true;
 
 <MainLayout 
   title="Digital Engineering Services | SoftDows" 
@@ -584,3 +586,4 @@ const serviceGroups = [
   </script>
 
 </MainLayout>
+

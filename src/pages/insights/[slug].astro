@@ -1,34 +1,37 @@
 ---
-import Layout from '../../layouts/MainLayout.astro';
-import { env } from 'cloudflare:workers';
-import { getDb } from '../../lib/db';
-import { articles } from '../../lib/db/schema/cms';
-import { eq } from 'drizzle-orm';
-import { marked } from 'marked'; 
+export const prerender = true;
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
 
-const { slug } = Astro.params;
-
-const db = getDb((env as any).DB);
-const item = await db.select().from(articles).where(eq(articles.slug, slug as string)).get();
-
-if (!item || item.status !== 'published') {
-  return new Response('Not Found', { status: 404 });
+export async function getStaticPaths() {
+  const items = await getCollection('insights');
+  return items.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
 }
 
-const title = `${item.seoTitle || item.title} | SoftDows`;
-const description = item.seoDescription || item.excerpt || '';
-// Fast markdown parsing
-const htmlContent = marked.parse(item.content);
+const { entry } = Astro.props;
+import { render } from 'astro:content';
+const { Content } = await render(entry);
 ---
-<Layout title={title} description={description}>
-  <div class="bg-white px-6 py-24 sm:py-32 lg:px-8">
-    <div class="mx-auto max-w-3xl text-base leading-7 text-gray-700">
-      <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{item.title}</h1>
-      <p class="mt-2 text-sm text-gray-500">By {item.authorName}</p>
+export const prerender = true;
+<MainLayout title={`${entry.data.title} | SoftDows Insights`} description={entry.data.description}>
+  <article class="px-6 py-24 sm:py-32 lg:px-8 bg-white min-h-screen">
+    <div class="mx-auto max-w-3xl">
+      <div class="flex items-center gap-4 text-sm mb-4">
+        <span class="font-semibold text-indigo-600">{entry.data.author}</span>
+        <span class="text-slate-400">&bull;</span>
+        <span class="text-slate-500">{entry.data.publishDate.toISOString().split('T')[0]}</span>
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">{entry.data.title}</h1>
       
-      <div class="mt-10 max-w-2xl prose prose-indigo">
-        <Fragment set:html={htmlContent} />
+      <div class="mt-10 max-w-2xl prose prose-indigo prose-lg text-gray-600">
+        <Content />
       </div>
     </div>
-  </div>
-</Layout>
+  </article>
+</MainLayout>
+
+
+

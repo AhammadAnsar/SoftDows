@@ -1,10 +1,11 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 
-export const prerender = false;
+
 
 // Cloudflare Edge Caching Header (Zero Worker Compute Cost)
-Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
+
 
 // Curated UI/UX Showcase Data for the 6 Products
 const productShowcases = [
@@ -148,6 +149,7 @@ const productShowcases = [
   }
 ];
 ---
+export const prerender = true;
 
 <MainLayout 
   title="Proprietary Software Platforms | SoftDows Product Suite" 
@@ -651,3 +653,4 @@ const productShowcases = [
   </section>
 
 </MainLayout>
+

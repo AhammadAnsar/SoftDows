@@ -1,11 +1,12 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getPublishedVentures } from '../../lib/content/ventures';
 
-export const prerender = false;
+
 
 // Cloudflare Edge Caching Header (Zero Worker Compute Cost)
-Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
+
 
 const allVentures = getPublishedVentures();
 
@@ -78,6 +79,7 @@ const ventureStyles: Record<string, {
   }
 };
 ---
+export const prerender = true;
 
 <MainLayout 
   title="Ventures We Operate | SoftDows Venture Studio" 
@@ -471,3 +473,4 @@ const ventureStyles: Record<string, {
   </section>
 
 </MainLayout>
+

@@ -3,35 +3,12 @@ import { getCollection } from 'astro:content';
 import { footerNav as fallbackFooterNav } from '../../config/navigation';
 import { siteConfig, contactConfig as fallbackContactConfig } from '../../config/site';
 
-import { env } from 'cloudflare:workers';
-import { getDb } from '../../lib/db';
-import { getFooterNavigation, getGlobalSiteSettings } from '../../lib/cms/content';
-
-const db = getDb((env as any).DB);
-const [dbFooterNav, dbSettings] = await Promise.all([
-  getFooterNavigation(db).catch(() => null),
-  getGlobalSiteSettings(db).catch(() => ({} as Record<string, string>))
-]);
-
 // Always ensure all categories are populated from fallback if DB returns partial
-const footerNav = {
-  services: (dbFooterNav?.services && dbFooterNav.services.length > 0) ? dbFooterNav.services : fallbackFooterNav.services,
-  products: (dbFooterNav?.products && dbFooterNav.products.length > 0) ? dbFooterNav.products : fallbackFooterNav.products,
-  ventures: (dbFooterNav?.ventures && dbFooterNav.ventures.length > 0) ? dbFooterNav.ventures : fallbackFooterNav.ventures,
-  company: (dbFooterNav?.company && dbFooterNav.company.length > 0) ? dbFooterNav.company : fallbackFooterNav.company,
-  legal: (dbFooterNav?.legal && dbFooterNav.legal.length > 0) ? dbFooterNav.legal : fallbackFooterNav.legal,
-};
+const footerNav = fallbackFooterNav;
 
-const contactConfig = {
-  address: dbSettings['contact_address'] || fallbackContactConfig.address,
-  phonePrimary: dbSettings['contact_phone'] || fallbackContactConfig.phonePrimary,
-  phoneSecondary: fallbackContactConfig.phoneSecondary,
-  whatsapp: fallbackContactConfig.whatsapp,
-  email: dbSettings['contact_email'] || fallbackContactConfig.email,
-  socials: fallbackContactConfig.socials
-};
+const contactConfig = fallbackContactConfig;
 
-const copyrightText = dbSettings['footer_copyright'] || `© ${new Date().getFullYear()} SoftDows. All rights reserved.`;
+const copyrightText = siteConfig.name;
 
 const allWork = await getCollection('work').catch(() => []);
 const hasPublishedWork = allWork.filter((p: any) => !p.data.isDraft).length > 0;
@@ -263,3 +240,6 @@ const filteredCompanyNav = hasPublishedWork ? footerNav.company : (footerNav.com
   </div>
 
 </footer>
+
+
+

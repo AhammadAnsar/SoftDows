@@ -1,42 +1,33 @@
 ---
-import Layout from '../../layouts/MainLayout.astro';
-import { env } from 'cloudflare:workers';
-import { getDb } from '../../lib/db';
-import { caseStudies } from '../../lib/db/schema/cms';
-import { eq } from 'drizzle-orm';
+export const prerender = true;
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
 
-const { slug } = Astro.params;
-
-const db = getDb((env as any).DB);
-const item = await db.select().from(caseStudies).where(eq(caseStudies.slug, slug as string)).get();
-
-if (!item || item.status !== 'published') {
-  return new Response('Not Found', { status: 404 });
+export async function getStaticPaths() {
+  const items = await getCollection('work');
+  return items.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
 }
 
-const title = `${item.seoTitle || item.title} | SoftDows`;
-const description = item.seoDescription || item.projectSummary;
+const { entry } = Astro.props;
+import { render } from 'astro:content';
+const { Content } = await render(entry);
 ---
-<Layout title={title} description={description}>
-  <div class="bg-white px-6 py-24 sm:py-32 lg:px-8">
-    <div class="mx-auto max-w-3xl text-base leading-7 text-gray-700">
-      <p class="text-base font-semibold leading-7 text-indigo-600">{item.clientName}</p>
-      <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{item.title}</h1>
-      <p class="mt-6 text-xl leading-8">{item.projectSummary}</p>
+export const prerender = true;
+<MainLayout title={`${entry.data.title} | SoftDows Work`} description={entry.data.projectSummary}>
+  <article class="px-6 py-24 sm:py-32 lg:px-8 bg-white min-h-screen">
+    <div class="mx-auto max-w-3xl">
+      <p class="text-base font-semibold leading-7 text-indigo-600">{entry.data.industry}</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{entry.data.title}</h1>
+      <p class="mt-6 text-xl leading-8 text-gray-700">{entry.data.projectSummary}</p>
       
-      {item.challenge && (
-        <div class="mt-10 max-w-2xl">
-          <h2 class="text-2xl font-bold tracking-tight text-gray-900">The Challenge</h2>
-          <p class="mt-6">{item.challenge}</p>
-        </div>
-      )}
-      
-      {item.solution && (
-        <div class="mt-10 max-w-2xl">
-          <h2 class="text-2xl font-bold tracking-tight text-gray-900">The Solution</h2>
-          <p class="mt-6">{item.solution}</p>
-        </div>
-      )}
+      <div class="mt-10 max-w-2xl prose prose-indigo prose-lg text-gray-600">
+        <Content />
+      </div>
     </div>
-  </div>
-</Layout>
+  </article>
+</MainLayout>
+
+
