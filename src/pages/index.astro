@@ -236,10 +236,10 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
               </div>
               <div class="flex -space-x-1.5 overflow-hidden">
-                <img src="/images/ventures/banglanotice.png" alt="BanglaNotice" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
-                <img src="/images/ventures/bidyashikhi.png" alt="BidyaShikhi" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
-                <img src="/images/ventures/nicetrix.png" alt="NiceTrix" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
-                <img src="/images/ventures/baharimart.png" alt="BahariMart" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/banglanotice.png" alt="BanglaNotice" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/bidyashikhi.png" alt="BidyaShikhi" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/nicetrix.png" alt="NiceTrix" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/baharimart.png" alt="BahariMart" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
               </div>
             </div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">03 · Studio</div>
@@ -667,7 +667,7 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
           <div class="relative shrink-0">
             <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white border-2 border-slate-200 overflow-hidden shadow-sm">
               {founder.photo ? (
-                <img src={founder.photo} alt={founder.fullName} class="w-full h-full object-cover" />
+                <img src={founder.photo} alt={founder.fullName} width="128" height="128" loading="lazy" class="w-full h-full object-cover" />
               ) : (
                 <div class="w-full h-full flex items-center justify-center font-bold text-3xl text-slate-400">
                   {founder.fullName.charAt(0)}
@@ -767,5 +767,7 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
   </section>
 
 </MainLayout>
+
+
 
 
