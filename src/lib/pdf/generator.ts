@@ -1,4 +1,4 @@
-﻿import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 export async function generateDocumentPdf(docData: any, type: 'Quotation' | 'Invoice') {
   const pdfDoc = await PDFDocument.create();
@@ -76,6 +76,30 @@ export async function generateDocumentPdf(docData: any, type: 'Quotation' | 'Inv
     y -= 15;
     page.drawText('Balance Due:', { x: col3, y, size: 12, font: boldFont, color: rgb(0.8, 0, 0) });
     page.drawText(((docData.balanceDue || 0) / 100).toFixed(2), { x: col4, y, size: 12, font: boldFont, color: rgb(0.8, 0, 0) });
+  }
+
+  y -= 40;
+  if (docData.notes) {
+    page.drawText('Notes:', { x: margin, y, size: 10, font: boldFont });
+    y -= 15;
+    const notesLines = docData.notes.split('\n');
+    for (const line of notesLines) {
+      if (y < margin) break;
+      page.drawText(line, { x: margin, y, size: 9, font, color: rgb(0.3, 0.3, 0.3) });
+      y -= 12;
+    }
+    y -= 10;
+  }
+
+  if (docData.terms) {
+    page.drawText('Terms & Conditions:', { x: margin, y, size: 10, font: boldFont });
+    y -= 15;
+    const termsLines = docData.terms.split('\n');
+    for (const line of termsLines) {
+      if (y < margin) break;
+      page.drawText(line, { x: margin, y, size: 9, font, color: rgb(0.3, 0.3, 0.3) });
+      y -= 12;
+    }
   }
   
   const pdfBytes = await pdfDoc.save();

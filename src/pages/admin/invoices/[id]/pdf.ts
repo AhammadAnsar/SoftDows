@@ -36,6 +36,7 @@ export const GET: APIRoute = async ({ request, params, locals }) => {
     total: invoice.total,
     amountPaid: invoice.amountPaid,
     balanceDue: invoice.balanceDue,
+    notes: invoice.notes,
     items
   }, 'Invoice');
 

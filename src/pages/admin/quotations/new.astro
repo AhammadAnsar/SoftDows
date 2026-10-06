@@ -7,6 +7,7 @@ import { clients, leads } from '../../../lib/db/schema/crm';
 import { projects } from '../../../lib/db/schema/agency';
 import { requirePermission } from '../../../lib/auth/authorization';
 import { env } from 'cloudflare:workers';
+import { servicesData } from '../../../config/services';
 import AdminIcon from '../../../components/admin/AdminIcon.astro';
 
 const user = Astro.locals.user;
@@ -125,6 +126,7 @@ if (Astro.request.method === 'POST') {
           <button type="button" id="addItemBtn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-sm font-medium">Add Item</button>
         </div>
         
+        <datalist id="serviceOptions">{servicesData.map(s => <option value={s.title} />)}</datalist>
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <table class="w-full text-left" id="itemsTable">
             <thead class="bg-slate-50 border-b">

@@ -5,10 +5,11 @@ import { getDb } from '../../../lib/db';
 import { invoices, invoiceItems } from '../../../lib/db/schema/billing';
 import { clients } from '../../../lib/db/schema/crm';
 import { projects } from '../../../lib/db/schema/agency';
-import { quotations } from '../../../lib/db/schema/billing';
+import { quotations, quotationItems } from '../../../lib/db/schema/billing';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '../../../lib/auth/authorization';
 import { env } from 'cloudflare:workers';
+import { servicesData } from '../../../config/services';
 import AdminIcon from '../../../components/admin/AdminIcon.astro';
 
 const user = Astro.locals.user;
@@ -21,6 +22,11 @@ const allProjects = await db.select().from(projects).orderBy(projects.name);
 const allQuotations = await db.select().from(quotations).orderBy(quotations.quotationNumber);
 
 let errors: Record<string, string> = {};
+let initialItemsJson = '[]';
+if (Astro.url.searchParams.get('quotationId')) {
+  const qItems = await db.select().from(quotationItems).where(eq(quotationItems.quotationId, Astro.url.searchParams.get('quotationId') as string));
+  initialItemsJson = JSON.stringify(qItems.map(qi => ({ description: qi.description, quantity: qi.quantity, unitPrice: (qi.unitPrice / 100).toFixed(2) })));
+}
 let formData = {
   invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random()*10000).toString().padStart(4, '0')}`,
   clientId: Astro.url.searchParams.get('clientId') || '',
@@ -227,6 +233,7 @@ if (Astro.request.method === 'POST') {
           <button type="button" id="addItemBtn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">Add Item</button>
         </div>
         
+        <datalist id="serviceOptions">{servicesData.map(s => <option value={s.title} />)}</datalist>
         <div class="border border-slate-200 rounded-lg overflow-hidden">
           <table class="w-full text-left">
             <thead class="bg-slate-50 border-b">
@@ -243,7 +250,7 @@ if (Astro.request.method === 'POST') {
             </tbody>
           </table>
         </div>
-        <input type="hidden" name="itemsJson" id="itemsJson" value="[]" />
+        <input type="hidden" name="itemsJson" id="itemsJson" value={Astro.request.method === 'POST' ? '[]' : initialItemsJson} />
       </div>
 
       <!-- Totals & Notes -->
@@ -296,7 +303,7 @@ if (Astro.request.method === 'POST') {
       
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="p-2"><input type="text" class="w-full border border-slate-300 rounded px-2 py-1 item-desc" data-index="${index}" value="${item.description.replace(/"/g, '&quot;')}" required placeholder="Item description" /></td>
+        <td class="p-2"><input type="text" class="w-full border border-slate-300 rounded px-2 py-1 item-desc" data-index="${index}" value="${item.description.replace(/"/g, '&quot;')}" required placeholder="Item description" list="serviceOptions" /></td>
         <td class="p-2"><input type="number" step="0.01" class="w-full border border-slate-300 rounded px-2 py-1 item-qty text-right" data-index="${index}" value="${item.quantity}" required /></td>
         <td class="p-2"><input type="number" step="0.01" class="w-full border border-slate-300 rounded px-2 py-1 item-price text-right" data-index="${index}" value="${item.unitPrice}" required /></td>
         <td class="p-2 text-right font-medium text-slate-700">${lineTotal.toFixed(2)}</td>

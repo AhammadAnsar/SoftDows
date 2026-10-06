@@ -33,6 +33,8 @@ export const GET: APIRoute = async ({ request, params, locals }) => {
     subtotal: quotation.subtotal,
     tax: quotation.tax,
     total: quotation.total,
+    notes: quotation.notes,
+    terms: quotation.terms,
     items
   }, 'Quotation');
 

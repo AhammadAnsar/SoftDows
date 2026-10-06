@@ -47,6 +47,11 @@ if (Astro.request.method === 'POST' && canEdit) {
   try {
     const data = await Astro.request.formData();
     const action = data.get('action')?.toString();
+
+    if (action === 'delete_project') {
+      await db.delete(projects).where(eq(projects.id, id as string));
+      return Astro.redirect('/admin/projects');
+    }
     
     if (action === 'delete') {
       requirePermission(user.role as any, 'projects', 'delete');

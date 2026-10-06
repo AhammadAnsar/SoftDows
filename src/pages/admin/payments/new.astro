@@ -19,8 +19,8 @@ const allInvoices = await db.select().from(invoices).orderBy(invoices.invoiceNum
 
 let errors: Record<string, string> = {};
 let formData = {
-  clientId: '',
-  invoiceId: '',
+  clientId: Astro.url.searchParams.get('clientId') || '',
+  invoiceId: Astro.url.searchParams.get('invoiceId') || '',
   amount: '',
   currency: 'USD',
   paymentDate: new Date().toISOString().split('T')[0],
