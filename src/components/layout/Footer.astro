@@ -8,7 +8,8 @@ const footerNav = fallbackFooterNav;
 
 const contactConfig = fallbackContactConfig;
 
-const copyrightText = siteConfig.name;
+const currentYear = new Date().getFullYear();
+const copyrightText = `${currentYear} &copy; All Right Reserved by SoftDows`;
 
 const allWork = await getCollection('work').catch(() => []);
 const hasPublishedWork = allWork.filter((p: any) => !p.data.isDraft).length > 0;
@@ -190,7 +191,7 @@ const filteredCompanyNav = hasPublishedWork ? footerNav.company : (footerNav.com
     <div class="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-500">
       
       <p class="font-normal text-center sm:text-left">
-        {copyrightText}
+        <span set:html={copyrightText}></span>
       </p>
 
       <!-- 100% Static SVG Social Media Links -->
@@ -240,6 +241,7 @@ const filteredCompanyNav = hasPublishedWork ? footerNav.company : (footerNav.com
   </div>
 
 </footer>
+
 
 
 
