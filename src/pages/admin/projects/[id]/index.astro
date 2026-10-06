@@ -142,7 +142,7 @@ if (Astro.request.method === 'POST' && canEdit) {
                     <p class="text-xs text-slate-500 mt-1">{m.description}</p>
                   </div>
                   <div class="flex items-center gap-4">
-                    <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">Due: {new Date(m.targetDate).toLocaleDateString()}</span>
+                    <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">Due: {m.targetDate ? new Date(m.targetDate).toLocaleDateString() : 'No Target Date'}</span>
                     <span class={`text-xs font-bold uppercase px-2 py-1 rounded ${m.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                       {m.status.replace('_', ' ')}
                     </span>
@@ -228,4 +228,5 @@ if (Astro.request.method === 'POST' && canEdit) {
     </div>
   </div>
 </AdminLayout>
+
 
