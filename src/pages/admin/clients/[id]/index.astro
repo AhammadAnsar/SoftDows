@@ -230,7 +230,7 @@ if (Astro.request.method === 'POST' && canEdit) {
                   <div>
                     <a href={`/admin/projects/${proj.id}`} class="text-sm font-bold text-[#242a56] hover:text-[#5568d3]">{proj.name}</a>
                   </div>
-                  <StatusBadge variant={proj.status === 'completed' ? 'success' : proj.status === 'active' ? 'info' : 'default'} size="sm">
+                  <StatusBadge variant={proj.status === 'completed' ? 'success' : proj.status === 'active' ? 'info' : 'neutral'} size="sm">
                     {proj.status}
                   </StatusBadge>
                 </div>
