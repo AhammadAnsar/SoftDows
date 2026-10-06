@@ -19,6 +19,8 @@ const db = getDb((env as any).DB);
 
 const quotationResult = await db.select({
   id: quotations.id,
+  clientId: quotations.clientId,
+  projectId: quotations.projectId,
   quotationNumber: quotations.quotationNumber,
   currency: quotations.currency,
   issueDate: quotations.issueDate,
