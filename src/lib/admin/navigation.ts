@@ -39,16 +39,6 @@ export const adminNavigation: NavGroup[] = [
     ]
   },
   {
-    label: 'Website',
-    items: [
-      { label: 'Content Pages', href: '/admin/content', icon: 'layout', resource: 'content', action: 'read' },
-      { label: 'Services', href: '/admin/services', icon: 'layers', resource: 'services', action: 'read' },
-      { label: 'Case Studies', href: '/admin/case-studies', icon: 'image', resource: 'case_studies', action: 'read' },
-      { label: 'Insights', href: '/admin/insights', icon: 'edit-3', resource: 'insights', action: 'read' },
-      { label: 'Media', href: '/admin/media', icon: 'camera', resource: 'media', action: 'read' },
-    ]
-  },
-  {
     label: 'Support',
     items: [
       { label: 'Tickets', href: '/admin/support', icon: 'life-buoy', resource: 'support', action: 'read' },
@@ -75,3 +65,4 @@ export function getAuthorizedNavigation(role: AppRole): NavGroup[] {
     };
   }).filter(group => group.items.length > 0);
 }
+

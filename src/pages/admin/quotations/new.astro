@@ -1,0 +1,237 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+import { quotations, quotationItems } from '../../../lib/db/schema/billing';
+import { clients, leads } from '../../../lib/db/schema/crm';
+import { projects } from '../../../lib/db/schema/agency';
+import { requirePermission } from '../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+requirePermission(user.role as any, 'quotations', 'create');
+
+const db = getDb((env as any).DB);
+const allClients = await db.select().from(clients).orderBy(clients.name);
+const allLeads = await db.select().from(leads).orderBy(leads.companyName);
+const allProjects = await db.select().from(projects).orderBy(projects.name);
+
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+    const itemsJson = data.get('itemsJson')?.toString() || '[]';
+    const items = JSON.parse(itemsJson);
+
+    const qNum = data.get('quotationNumber')?.toString() || `Q-${new Date().getFullYear()}-${Math.floor(Math.random()*10000).toString().padStart(4, '0')}`;
+    
+    let subtotal = 0;
+    for (const item of items) {
+      subtotal += Math.round(parseFloat(item.quantity) * parseFloat(item.unitPrice) * 100);
+    }
+    const discount = Math.round(parseFloat(data.get('discount')?.toString() || '0') * 100);
+    const tax = Math.round(parseFloat(data.get('tax')?.toString() || '0') * 100);
+    const total = subtotal - discount + tax;
+
+    const [newQuotation] = await db.insert(quotations).values({
+      quotationNumber: qNum,
+      clientId: data.get('clientId')?.toString() || '',
+      leadId: data.get('leadId')?.toString() || null,
+      projectId: data.get('projectId')?.toString() || null,
+      currency: data.get('currency')?.toString() || 'USD',
+      issueDate: new Date(data.get('issueDate')?.toString() || new Date()),
+      expiryDate: data.get('expiryDate') ? new Date(data.get('expiryDate')?.toString()!) : null,
+      status: data.get('status') as any || 'draft',
+      subtotal,
+      discount,
+      tax,
+      total,
+      terms: data.get('terms')?.toString(),
+      notes: data.get('notes')?.toString(),
+    }).returning({ id: quotations.id });
+
+    if (items.length > 0) {
+      const qItems = items.map((item: any, i: number) => ({
+        quotationId: newQuotation.id,
+        description: item.description,
+        quantity: parseFloat(item.quantity),
+        unitPrice: Math.round(parseFloat(item.unitPrice) * 100),
+        lineTotal: Math.round(parseFloat(item.quantity) * parseFloat(item.unitPrice) * 100),
+        displayOrder: i
+      }));
+      await db.insert(quotationItems).values(qItems);
+    }
+
+    return Astro.redirect('/admin/quotations');
+  } catch (e: any) {
+    errors.system = e.message;
+  }
+}
+---
+<AdminLayout title="New Quotation" user={user as any}>
+  <div class="p-6 max-w-5xl mx-auto pb-24">
+    <div class="flex items-center gap-4 mb-6">
+      <a href="/admin/quotations" class="text-slate-400 hover:text-slate-600"><AdminIcon name="arrow-left" class="w-5 h-5" /></a>
+      <h1 class="text-2xl font-bold">Create Quotation</h1>
+    </div>
+
+    {errors.system && <div class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100">{errors.system}</div>}
+
+    <form method="POST" id="quotationForm" class="bg-white rounded-xl border border-slate-200 p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Client *</label>
+          <select name="clientId" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+            <option value="">Select a client...</option>
+            {allClients.map((c) => <option value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Quotation Number *</label>
+          <input type="text" name="quotationNumber" required placeholder="Q-2026-0001" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Issue Date *</label>
+          <input type="date" name="issueDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Expiry Date</label>
+          <input type="date" name="expiryDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Currency</label>
+          <select name="currency" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+            <option value="USD">USD</option>
+            <option value="BDT">BDT</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="border-slate-100" />
+      
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold">Line Items</h2>
+          <button type="button" id="addItemBtn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-sm font-medium">Add Item</button>
+        </div>
+        
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <table class="w-full text-left" id="itemsTable">
+            <thead class="bg-slate-50 border-b">
+              <tr>
+                <th class="p-3 font-medium text-sm text-slate-600">Description</th>
+                <th class="p-3 font-medium text-sm text-slate-600 w-32">Qty</th>
+                <th class="p-3 font-medium text-sm text-slate-600 w-40">Unit Price</th>
+                <th class="p-3 font-medium text-sm text-slate-600 w-40">Total</th>
+                <th class="p-3 w-12"></th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody" class="divide-y divide-slate-100">
+              <!-- JS rendered rows -->
+            </tbody>
+          </table>
+        </div>
+        <input type="hidden" name="itemsJson" id="itemsJson" value="[]" />
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <div class="w-full md:w-1/3 space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-600">Subtotal</span>
+            <span class="font-medium" id="displaySubtotal">0.00</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-600">Discount</span>
+            <input type="number" step="0.01" name="discount" id="inputDiscount" value="0" class="w-24 px-2 py-1 border rounded text-right" />
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-600">Tax</span>
+            <input type="number" step="0.01" name="tax" id="inputTax" value="0" class="w-24 px-2 py-1 border rounded text-right" />
+          </div>
+          <div class="flex justify-between items-center pt-3 border-t font-bold text-lg">
+            <span>Total</span>
+            <span id="displayTotal">0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+        <button type="submit" class="px-6 py-2 bg-[#5568d3] text-white rounded-lg font-medium hover:bg-[#4557c2]">Save Quotation</button>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  let items = [{ description: '', quantity: 1, unitPrice: 0 }];
+  
+  function renderItems() {
+    const tbody = document.getElementById('itemsBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    let subtotal = 0;
+    
+    items.forEach((item, index) => {
+      const lineTotal = item.quantity * item.unitPrice;
+      subtotal += lineTotal;
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" class="w-full border rounded px-2 py-1 item-desc" data-index="${index}" value="${item.description}" required /></td>
+        <td class="p-2"><input type="number" step="0.01" class="w-full border rounded px-2 py-1 item-qty" data-index="${index}" value="${item.quantity}" required /></td>
+        <td class="p-2"><input type="number" step="0.01" class="w-full border rounded px-2 py-1 item-price" data-index="${index}" value="${item.unitPrice}" required /></td>
+        <td class="p-2 font-medium text-slate-700">${lineTotal.toFixed(2)}</td>
+        <td class="p-2 text-center"><button type="button" class="text-red-500 hover:text-red-700 font-bold del-btn" data-index="${index}">×</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Update totals
+    document.getElementById('displaySubtotal')!.textContent = subtotal.toFixed(2);
+    
+    const discount = parseFloat((document.getElementById('inputDiscount') as HTMLInputElement).value) || 0;
+    const tax = parseFloat((document.getElementById('inputTax') as HTMLInputElement).value) || 0;
+    const total = subtotal - discount + tax;
+    document.getElementById('displayTotal')!.textContent = total.toFixed(2);
+    
+    // Update hidden JSON
+    (document.getElementById('itemsJson') as HTMLInputElement).value = JSON.stringify(items);
+    
+    attachEvents();
+  }
+
+  function attachEvents() {
+    document.querySelectorAll('.item-desc').forEach(el => el.addEventListener('input', (e: any) => {
+      items[e.target.dataset.index].description = e.target.value;
+      (document.getElementById('itemsJson') as HTMLInputElement).value = JSON.stringify(items);
+    }));
+    document.querySelectorAll('.item-qty').forEach(el => el.addEventListener('input', (e: any) => {
+      items[e.target.dataset.index].quantity = parseFloat(e.target.value) || 0;
+      renderItems();
+    }));
+    document.querySelectorAll('.item-price').forEach(el => el.addEventListener('input', (e: any) => {
+      items[e.target.dataset.index].unitPrice = parseFloat(e.target.value) || 0;
+      renderItems();
+    }));
+    document.querySelectorAll('.del-btn').forEach(el => el.addEventListener('click', (e: any) => {
+      items.splice(e.target.dataset.index, 1);
+      renderItems();
+    }));
+  }
+
+  document.getElementById('addItemBtn')?.addEventListener('click', () => {
+    items.push({ description: '', quantity: 1, unitPrice: 0 });
+    renderItems();
+  });
+
+  document.getElementById('inputDiscount')?.addEventListener('input', renderItems);
+  document.getElementById('inputTax')?.addEventListener('input', renderItems);
+
+  renderItems();
+</script>

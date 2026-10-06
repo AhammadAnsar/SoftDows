@@ -1,0 +1,97 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../../lib/db';
+import { payments, invoices } from '../../../../lib/db/schema/billing';
+import { clients } from '../../../../lib/db/schema/crm';
+import { user as userSchema } from '../../../../lib/db/schema/auth';
+import { eq } from 'drizzle-orm';
+import { requirePermission } from '../../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+import AdminIcon from '../../../../components/admin/AdminIcon.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+requirePermission(user.role as any, 'payments', 'read');
+
+const { id } = Astro.params;
+const db = getDb((env as any).DB);
+
+const paymentResult = await db.select({
+  id: payments.id,
+  amount: payments.amount,
+  currency: payments.currency,
+  paymentDate: payments.paymentDate,
+  paymentMethod: payments.paymentMethod,
+  reference: payments.reference,
+  notes: payments.notes,
+  status: payments.status,
+  invoiceNum: invoices.invoiceNumber,
+  clientName: clients.name,
+  recordedBy: userSchema.name,
+}).from(payments)
+  .leftJoin(invoices, eq(payments.invoiceId, invoices.id))
+  .leftJoin(clients, eq(payments.clientId, clients.id))
+  .leftJoin(userSchema, eq(payments.recordedById, userSchema.id))
+  .where(eq(payments.id, id as string));
+
+const payment = paymentResult[0];
+
+if (!payment) {
+  return Astro.redirect('/admin/payments');
+}
+---
+<AdminLayout title={`Payment ${payment.id}`} user={user as any}>
+  <div class="p-6 max-w-4xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+      <a href="/admin/payments" class="text-slate-400 hover:text-slate-600">
+        <AdminIcon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h1 class="text-2xl font-bold">Payment Details</h1>
+      <div class="ml-auto flex items-center gap-3">
+        <a href={`/admin/payments/${payment.id}/edit`} class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors">Edit</a>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Client</h3>
+          <p class="text-base font-medium text-slate-900">{payment.clientName || 'N/A'}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Invoice</h3>
+          <p class="text-base font-medium text-slate-900">{payment.invoiceNum || 'N/A'}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Amount</h3>
+          <p class="text-base font-medium text-slate-900">{(payment.amount / 100).toFixed(2)} {payment.currency}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Status</h3>
+          <p class="text-base font-medium text-slate-900 capitalize">{payment.status}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Payment Date</h3>
+          <p class="text-base font-medium text-slate-900">{new Date(payment.paymentDate).toLocaleDateString()}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Payment Method</h3>
+          <p class="text-base font-medium text-slate-900">{payment.paymentMethod}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Reference</h3>
+          <p class="text-base font-medium text-slate-900">{payment.reference || '-'}</p>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Recorded By</h3>
+          <p class="text-base font-medium text-slate-900">{payment.recordedBy || 'N/A'}</p>
+        </div>
+        <div class="md:col-span-2">
+          <h3 class="text-sm font-medium text-slate-500 mb-1">Notes</h3>
+          <p class="text-base text-slate-700 whitespace-pre-wrap">{payment.notes || '-'}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
