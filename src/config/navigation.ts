@@ -38,6 +38,7 @@ export const mainNav: MainNavItem[] = [
       },
     ],
   },
+  { label: 'Clients', href: '/clients/' },
   {
     label: 'Products',
     href: '/products/',
@@ -114,6 +115,7 @@ export const footerNav = {
   company: [
     { label: 'About SoftDows', href: '/about/' },
     { label: 'Leadership & Team', href: '/team/' },
+    { label: 'Clients & Case Studies', href: '/clients/' },
     { label: 'Start a Project', href: '/start-a-project/' },
     { label: 'Contact Us', href: '/contact/' }
   ],
@@ -123,3 +125,5 @@ export const footerNav = {
     { label: 'Legal Disclaimers', href: '/legal-disclaimer/' }
   ]
 };
+
+

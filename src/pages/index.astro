@@ -433,9 +433,7 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
         {clientPartners.map((client) => (
           <a 
-            href={client.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
+            href={`/clients/${client.id}`} 
             class="group p-3 sm:p-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 hover:border-[#5568d3]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
           >
             <div>
@@ -451,7 +449,7 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
                 <span class="text-[9px] sm:text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded sm:rounded-md border border-slate-200/60 flex items-center gap-1 group-hover:text-[#5568d3] transition-colors truncate">
                   <span class="truncate">{client.category}</span>
                   <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </span>
               </div>
@@ -472,6 +470,14 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
           </a>
         ))}
       </div>
+        <div class="mt-10 sm:mt-14 flex justify-center">
+          <a href="/clients/" class="inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-3.5 border border-slate-200 text-sm sm:text-base font-bold rounded-xl shadow-sm text-[#192040] bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5568d3]">
+            View All Case Studies
+            <svg class="ml-2 -mr-1 w-4 h-4 sm:w-5 sm:h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+        </div>
 
     </div>
   </section>
@@ -767,6 +773,9 @@ const productVisuals: Record<string, { gradient: string; badge: string; svgPath:
   </section>
 
 </MainLayout>
+
+
+
 
 
 
