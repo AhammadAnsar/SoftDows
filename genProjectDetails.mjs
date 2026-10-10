@@ -1,0 +1,139 @@
+﻿import fs from 'fs';
+import path from 'path';
+
+const outDir = './src/pages/admin/projects/[id]';
+if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+fs.writeFileSync(path.join(outDir, 'index.astro'), `---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { db } from '../../../../lib/db';
+import { projects, clients, projectMilestones, projectMembers, user } from '../../../../lib/db/schema';
+import { getAuth } from '../../../../lib/auth';
+import { env } from 'cloudflare:workers';
+import { eq, desc } from 'drizzle-orm';
+import { requirePermission } from '../../../../lib/auth/authorization';
+
+const _env = env as any;
+const auth = getAuth(_env);
+const session = await auth.api.getSession({ headers: Astro.request.headers });
+if (!session) return Astro.redirect('/login');
+requirePermission(session.user.role as any, 'projects', 'read');
+const canEdit = requirePermission(session.user.role as any, 'projects', 'update');
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/admin/projects');
+
+let error = '';
+let success = '';
+
+if (Astro.request.method === 'POST' && canEdit) {
+  try {
+    const data = await Astro.request.formData();
+    const action = data.get('action');
+    
+    if (action === 'add_milestone') {
+      await db.insert(projectMilestones).values({
+        id: crypto.randomUUID(),
+        projectId: id,
+        title: data.get('title')?.toString() || 'Untitled',
+        status: data.get('status')?.toString() as any || 'pending',
+      });
+      success = 'Milestone added.';
+    } else if (action === 'update_status') {
+       await db.update(projects).set({
+         status: data.get('status')?.toString() as any
+       }).where(eq(projects.id, id));
+       success = 'Project status updated.';
+    } else if (action === 'assign_member') {
+       const userId = data.get('userId')?.toString();
+       if (userId) {
+         await db.insert(projectMembers).values({
+           id: crypto.randomUUID(),
+           projectId: id,
+           userId: userId,
+           role: 'member'
+         });
+         success = 'Staff assigned.';
+       }
+    }
+  } catch(e: any) {
+    error = e.message;
+  }
+}
+
+const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1).then(r => r[0]);
+if (!project) return new Response('Not found', { status: 404 });
+
+const client = await db.select().from(clients).where(eq(clients.id, project.clientId)).limit(1).then(r => r[0]);
+const milestones = await db.select().from(projectMilestones).where(eq(projectMilestones.projectId, id)).orderBy(projectMilestones.displayOrder);
+const members = await db.select({
+  name: user.name, role: projectMembers.role
+}).from(projectMembers).innerJoin(user, eq(projectMembers.userId, user.id)).where(eq(projectMembers.projectId, id));
+const availableStaff = await db.select().from(user).where(eq(user.role, 'admin')); // simplified
+
+---
+<AdminLayout title={\`Project: \${project.name}\`} user={session.user}>
+  <div class="p-6 max-w-7xl mx-auto grid grid-cols-3 gap-6">
+    <div class="col-span-2 space-y-6">
+       <h1 class="text-2xl font-bold">{project.name}</h1>
+       {error && <div class="p-4 bg-red-50 text-red-600 rounded">{error}</div>}
+       {success && <div class="p-4 bg-green-50 text-green-600 rounded">{success}</div>}
+       
+       <div class="bg-white p-6 border rounded shadow-sm">
+         <h2 class="font-bold mb-4">Milestones</h2>
+         <ul class="divide-y">
+           {milestones.map(m => (
+             <li class="py-2 flex justify-between">
+               <span>{m.title}</span>
+               <span class="text-sm bg-slate-100 px-2 rounded">{m.status}</span>
+             </li>
+           ))}
+         </ul>
+         {canEdit && (
+           <form method="POST" class="mt-4 flex gap-2">
+             <input type="hidden" name="action" value="add_milestone"/>
+             <input type="text" name="title" required placeholder="Milestone Title" class="border p-2 rounded"/>
+             <button type="submit" class="bg-[#242a56] text-white px-4 rounded">Add</button>
+           </form>
+         )}
+       </div>
+    </div>
+    
+    <div class="space-y-6">
+       <div class="bg-white p-6 border rounded shadow-sm">
+         <h2 class="font-bold mb-2">Details</h2>
+         <p class="text-sm">Client: {client?.name}</p>
+         <p class="text-sm">Status: {project.status}</p>
+         {canEdit && (
+            <form method="POST" class="mt-2 flex gap-2">
+              <input type="hidden" name="action" value="update_status"/>
+              <select name="status" class="border p-1 rounded text-sm">
+                <option value="planning">Planning</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button type="submit" class="bg-slate-200 text-sm px-2 rounded">Update</button>
+            </form>
+         )}
+       </div>
+
+       <div class="bg-white p-6 border rounded shadow-sm">
+         <h2 class="font-bold mb-2">Team</h2>
+         <ul class="text-sm divide-y">
+           {members.map(m => <li class="py-1">{m.name}</li>)}
+         </ul>
+         {canEdit && (
+            <form method="POST" class="mt-2 flex gap-2">
+              <input type="hidden" name="action" value="assign_member"/>
+              <select name="userId" class="border p-1 rounded text-sm">
+                {availableStaff.map(s => <option value={s.id}>{s.name}</option>)}
+              </select>
+              <button type="submit" class="bg-slate-200 text-sm px-2 rounded">Assign</button>
+            </form>
+         )}
+       </div>
+    </div>
+  </div>
+</AdminLayout>
+`);
+console.log('Project details written.');

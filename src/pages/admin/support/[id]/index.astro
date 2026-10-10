@@ -1,0 +1,356 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../../lib/db';
+import { supportTickets, supportMessages } from '../../../../lib/db/schema/support';
+import { clients } from '../../../../lib/db/schema/crm';
+import { user as userTable } from '../../../../lib/db/schema/auth';
+import { eq, asc, and } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/sqlite-core';
+import AdminIcon from '../../../../components/admin/AdminIcon.astro';
+import StatusBadge from '../../../../components/admin/StatusBadge.astro';
+import type { BadgeVariant } from '../../../../components/admin/StatusBadge.astro';
+import { requirePermission } from '../../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+
+const user_ = Astro.locals.user;
+if (!user_) return Astro.redirect('/login');
+requirePermission(user_.role as any, 'support', 'read');
+
+const db = getDb((env as any).DB);
+const { id } = Astro.params;
+
+if (!id) return Astro.redirect('/admin/support');
+
+const Assignee = alias(userTable, 'assignee');
+const Creator = alias(userTable, 'creator');
+const Sender = alias(userTable, 'sender');
+
+const [ticketData] = await db
+  .select({
+    ticket: supportTickets,
+    client: clients,
+    assignee: Assignee,
+    creator: Creator
+  })
+  .from(supportTickets)
+  .leftJoin(clients, eq(supportTickets.clientId, clients.id))
+  .leftJoin(Assignee, eq(supportTickets.assignedToId, Assignee.id))
+  .leftJoin(Creator, eq(supportTickets.createdById, Creator.id))
+  .where(eq(supportTickets.id, id))
+  .limit(1);
+
+if (!ticketData) return Astro.redirect('/admin/support');
+
+const isStaff = ['admin', 'manager', 'staff'].includes(user_.role as string);
+
+const messagesQuery = db
+  .select({
+    message: supportMessages,
+    sender: Sender
+  })
+  .from(supportMessages)
+  .leftJoin(Sender, eq(supportMessages.senderId, Sender.id))
+  .where(
+    and(
+      eq(supportMessages.ticketId, id),
+      isStaff ? undefined : eq(supportMessages.visibility, 'public')
+    )
+  )
+  .orderBy(asc(supportMessages.createdAt));
+
+const messages = await messagesQuery;
+
+const priorityVariant: Record<string, BadgeVariant> = {
+  low: 'neutral', medium: 'info', high: 'warning', urgent: 'danger'
+};
+const statusVariant: Record<string, BadgeVariant> = {
+  open: 'info', in_progress: 'warning', waiting_for_client: 'neutral', resolved: 'success', closed: 'neutral'
+};
+
+const formatText = (s: string) => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+// Check update permission
+let canUpdate = false;
+try {
+  requirePermission(user_.role as any, 'support', 'update');
+  canUpdate = true;
+} catch {
+  canUpdate = false;
+}
+---
+
+<AdminLayout title={`Ticket ${ticketData.ticket.ticketNumber}`} user={user_}>
+  <div class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+    
+    <!-- Back Link -->
+    <a href="/admin/support" class="inline-flex items-center text-sm font-medium text-[#64748b] hover:text-[#242a56] mb-6 transition-colors">
+      &larr; Back to Support Tickets
+    </a>
+
+    <!-- Header -->
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-[#e2e8f0] mb-6">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-sm font-mono font-bold text-slate-500">{ticketData.ticket.ticketNumber}</span>
+            <StatusBadge label={formatText(ticketData.ticket.status)} variant={statusVariant[ticketData.ticket.status] || 'neutral'} />
+            <StatusBadge label={formatText(ticketData.ticket.priority)} variant={priorityVariant[ticketData.ticket.priority] || 'neutral'} />
+          </div>
+          <h1 class="text-2xl font-bold text-[#242a56]">{ticketData.ticket.subject}</h1>
+        </div>
+        
+        {canUpdate && (
+          <div class="flex gap-2">
+            <div class="relative">
+              <select 
+                class="js-status-select appearance-none bg-white border border-[#e2e8f0] text-[#242a56] text-sm rounded-lg focus:ring-[#6878d6] focus:border-[#6878d6] block w-full px-4 py-2 pr-8 shadow-sm font-medium"
+                data-ticket-id={id}
+              >
+                {['open', 'in_progress', 'waiting_for_client', 'resolved', 'closed'].map(s => (
+                  <option value={s} selected={ticketData.ticket.status === s}>Status: {formatText(s)}</option>
+                ))}
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                <AdminIcon name="chevron-down" class="w-4 h-4" />
+              </div>
+            </div>
+            
+            <div class="relative">
+              <select 
+                class="js-priority-select appearance-none bg-white border border-[#e2e8f0] text-[#242a56] text-sm rounded-lg focus:ring-[#6878d6] focus:border-[#6878d6] block w-full px-4 py-2 pr-8 shadow-sm font-medium"
+                data-ticket-id={id}
+              >
+                {['low', 'medium', 'high', 'urgent'].map(p => (
+                  <option value={p} selected={ticketData.ticket.priority === p}>Priority: {formatText(p)}</option>
+                ))}
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                <AdminIcon name="chevron-down" class="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 pt-6 border-t border-[#e2e8f0]">
+        <div>
+          <p class="text-xs font-medium text-[#64748b] mb-1">Client</p>
+          {ticketData.client ? (
+            <a href={`/admin/clients/${ticketData.client.id}`} class="text-sm font-semibold text-[#6878d6] hover:underline">
+              {ticketData.client.name}
+            </a>
+          ) : (
+            <p class="text-sm font-semibold text-[#242a56]">Unknown</p>
+          )}
+        </div>
+        <div>
+          <p class="text-xs font-medium text-[#64748b] mb-1">Category</p>
+          <p class="text-sm font-semibold text-[#242a56]">{formatText(ticketData.ticket.category)}</p>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-[#64748b] mb-1">Assigned To</p>
+          <p class="text-sm font-semibold text-[#242a56]">{ticketData.assignee?.name || 'Unassigned'}</p>
+        </div>
+        <div>
+          <p class="text-xs font-medium text-[#64748b] mb-1">Created By</p>
+          <p class="text-sm font-semibold text-[#242a56]">
+            {ticketData.creator?.name || 'Unknown'} 
+            <span class="text-xs text-slate-500 font-normal ml-1">
+              {ticketData.ticket.createdAt ? new Date(ticketData.ticket.createdAt).toLocaleDateString() : ''}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversation -->
+    <div class="space-y-6 mb-8">
+      <!-- Original Description -->
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-[#e2e8f0]">
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#242a56] font-bold">
+              {ticketData.creator?.name?.charAt(0) || 'U'}
+            </div>
+            <div>
+              <p class="text-sm font-bold text-[#242a56]">{ticketData.creator?.name || 'Unknown User'}</p>
+              <p class="text-xs text-[#64748b]">
+                {ticketData.ticket.createdAt ? new Date(ticketData.ticket.createdAt).toLocaleString() : ''}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">{ticketData.ticket.description}</div>
+      </div>
+
+      <!-- Messages List -->
+      {messages.map(({ message, sender }) => (
+        <div class={`p-6 rounded-xl shadow-sm border ${message.visibility === 'internal' ? 'bg-amber-50 border-amber-200' : 'bg-white border-[#e2e8f0]'}`}>
+          <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${message.visibility === 'internal' ? 'bg-amber-100 text-amber-800' : 'bg-[#f1f5f9] text-[#242a56]'}`}>
+                {sender?.name?.charAt(0) || 'U'}
+              </div>
+              <div>
+                <p class="text-sm font-bold text-[#242a56]">
+                  {sender?.name || 'Unknown'}
+                  {message.visibility === 'internal' && (
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-800">
+                      Internal Note
+                    </span>
+                  )}
+                </p>
+                <p class="text-xs text-[#64748b]">
+                  {message.createdAt ? new Date(message.createdAt).toLocaleString() : ''}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">{message.message}</div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Reply Forms -->
+    {canUpdate && (
+      <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+        {isStaff && (
+          <div class="flex border-b border-[#e2e8f0]">
+            <button type="button" class="js-tab-btn flex-1 py-3 text-sm font-medium text-center border-b-2 border-[#242a56] text-[#242a56] bg-slate-50 transition-colors" data-target="public-reply">
+              Public Reply
+            </button>
+            <button type="button" class="js-tab-btn flex-1 py-3 text-sm font-medium text-center border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors" data-target="internal-note">
+              Internal Note
+            </button>
+          </div>
+        )}
+        
+        <div class="p-6">
+          <form class="js-reply-form" data-ticket-id={id} id="public-reply">
+            <input type="hidden" name="visibility" value="public" />
+            <textarea 
+              name="message" 
+              rows="4" 
+              required
+              placeholder="Type your reply to the client here..." 
+              class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:ring-[#6878d6] focus:border-[#6878d6] resize-y"
+            ></textarea>
+            <div class="mt-4 flex justify-end">
+              <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-[#242a56] hover:bg-[#1a1e3e] text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                Send Reply
+              </button>
+            </div>
+          </form>
+
+          {isStaff && (
+            <form class="js-reply-form hidden" data-ticket-id={id} id="internal-note">
+              <input type="hidden" name="visibility" value="internal" />
+              <textarea 
+                name="message" 
+                rows="4" 
+                required
+                placeholder="Type an internal note (visible only to staff)..." 
+                class="w-full px-4 py-3 border border-amber-300 bg-amber-50 rounded-lg text-sm focus:ring-amber-500 focus:border-amber-500 resize-y"
+              ></textarea>
+              <div class="mt-4 flex justify-end">
+                <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                  Add Internal Note
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  // Tab Switching logic
+  document.querySelectorAll('.js-tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const targetId = (e.currentTarget as HTMLElement).dataset.target;
+      
+      // Update buttons
+      document.querySelectorAll('.js-tab-btn').forEach(b => {
+        b.classList.remove('border-[#242a56]', 'text-[#242a56]', 'bg-slate-50');
+        b.classList.add('border-transparent', 'text-slate-500');
+      });
+      (e.currentTarget as HTMLElement).classList.add('border-[#242a56]', 'text-[#242a56]', 'bg-slate-50');
+      (e.currentTarget as HTMLElement).classList.remove('border-transparent', 'text-slate-500');
+      
+      // Update forms
+      document.querySelectorAll('.js-reply-form').forEach(f => f.classList.add('hidden'));
+      document.getElementById(targetId!)?.classList.remove('hidden');
+    });
+  });
+
+  // Reply submission
+  document.querySelectorAll('.js-reply-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target as HTMLFormElement;
+      const body = Object.fromEntries(new FormData(f));
+      const ticketId = f.dataset.ticketId;
+      
+      const btn = f.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`/api/support/${ticketId}/reply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const err = await res.json();
+          alert((err as any).error || 'Failed to submit reply');
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      } catch (err) {
+        alert('An error occurred');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+  });
+
+  // Status & Priority updates
+  const updateTicket = async (id: string, field: string, value: string) => {
+    try {
+      const res = await fetch(`/api/support/${id}/${field}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert((err as any).error || `Failed to update ${field}`);
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      alert('An error occurred');
+    }
+  };
+
+  document.querySelectorAll('.js-status-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const target = e.target as HTMLSelectElement;
+      updateTicket(target.dataset.ticketId!, 'status', target.value);
+    });
+  });
+
+  document.querySelectorAll('.js-priority-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const target = e.target as HTMLSelectElement;
+      updateTicket(target.dataset.ticketId!, 'priority', target.value);
+    });
+  });
+</script>

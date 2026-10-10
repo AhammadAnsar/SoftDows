@@ -1,0 +1,115 @@
+---
+export const prerender = true;
+import MainLayout from '../../layouts/MainLayout.astro';
+import Badge from '../../components/ui/Badge.astro';
+import { getPublishedVentures } from '../../lib/content/ventures';
+
+export function getStaticPaths() {
+  return getPublishedVentures().map(venture => ({
+    params: { slug: venture.slug },
+    props: { venture }
+  }));
+}
+
+const { venture } = Astro.props;
+
+// Simple placeholder icons
+const icons = {
+  cube: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`,
+  shield: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`,
+  openNew: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>`,
+  arrowRight: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`
+};
+
+const currentTheme = {
+  gradient: 'from-indigo-600 to-purple-600',
+  lightGradient: 'from-indigo-50/50 to-white',
+  icon: icons.cube,
+  features: venture.keyFocus.map(focus => ({ title: focus, desc: 'Core operational focus area.', icon: icons.cube }))
+};
+---
+<MainLayout title={venture.seoTitle || venture.brandName} description={venture.seoDescription || venture.shortDescription}>
+  <section class={`relative overflow-hidden pt-24 pb-32 bg-gradient-to-br ${currentTheme.gradient} text-white`}>
+    <div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center gap-12">
+      <div class="w-full md:w-1/2">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 tracking-tight">
+          {venture.brandName}
+        </h1>
+        {venture.localName && (
+          <h2 class="text-2xl md:text-3xl font-medium text-white/90 mb-6">{venture.localName}</h2>
+        )}
+        <p class="text-lg md:text-xl text-white/80 mb-8 max-w-xl leading-relaxed">
+          {venture.shortDescription || venture.description}
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          {venture.externalUrl && (
+            <a href={venture.externalUrl} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white text-slate-900 px-8 py-3.5 rounded-lg font-semibold hover:bg-slate-50 transition-colors shadow-lg hover:shadow-xl transform duration-200">
+              Visit {venture.brandName}
+              <div class="w-5 h-5" set:html={icons.openNew}></div>
+            </a>
+          )}
+        </div>
+      </div>
+      <div class="w-full md:w-1/2 flex justify-center md:justify-end">
+        {venture.logo ? (
+          <img src={venture.logo} alt={venture.brandName} class="w-64 h-64 object-contain bg-white rounded-3xl shadow-2xl p-6" />
+        ) : (
+          <div class="w-64 h-64 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl flex items-center justify-center">
+             <div class="w-32 h-32 text-white/50" set:html={currentTheme.icon}></div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row gap-16">
+        <div class="w-full md:w-7/12">
+          <Badge class="mb-4">Overview</Badge>
+          <h3 class="text-3xl font-bold text-[var(--color-brand-navy)] mb-6">About {venture.brandName}</h3>
+          <div class="prose prose-lg prose-slate text-slate-600">
+            <p class="whitespace-pre-line leading-relaxed">
+              {venture.description}
+            </p>
+          </div>
+          
+          <div class="mt-12 p-8 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-6 relative overflow-hidden group">
+            <div class={`p-4 rounded-xl bg-gradient-to-br ${currentTheme.gradient} text-white shrink-0 relative z-10 w-16 h-16`}>
+              <div class="w-full h-full" set:html={icons.shield}></div>
+            </div>
+            <div class="relative z-10">
+              <h4 class="text-xl font-bold text-slate-900 mb-2">Powered by SoftDows</h4>
+              <p class="text-slate-600 leading-relaxed text-sm">
+                As a core SoftDows venture, {venture.brandName} benefits from our elite engineering principles: clean architecture, robust security, scalability, and exceptional user experience.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full md:w-5/12">
+          <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100 relative overflow-hidden">
+            <h3 class="text-2xl font-bold text-[var(--color-brand-navy)] mb-8 relative z-10">Venture Highlights</h3>
+            
+            <div class="space-y-8 relative z-10">
+              {currentTheme.features.map(feature => (
+                <div class="flex gap-5 group">
+                  <div class="mt-1 w-12 h-12 flex items-center justify-center rounded-full bg-slate-50 shrink-0 text-slate-700">
+                    <div class="w-6 h-6" set:html={feature.icon}></div>
+                  </div>
+                  <div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-1">{feature.title}</h4>
+                    <p class="text-slate-600 text-sm">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+

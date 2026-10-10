@@ -1,0 +1,166 @@
+---
+export const prerender = false;
+import PortalLayout from '../../../../layouts/PortalLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../../lib/db';
+import { getAuthorizedClientContext } from '../../../../lib/portal/auth';
+import { supportTickets, supportMessages } from '../../../../lib/db/schema/support';
+import { user as userTable } from '../../../../lib/db/schema/auth';
+import { eq, and, asc } from 'drizzle-orm';
+import StatusBadge from '../../../../components/admin/StatusBadge.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+const db = getDb((env as any).DB);
+const ctx = await getAuthorizedClientContext(db, user.id);
+if (!ctx.authorized) return Astro.redirect('/admin/access-denied');
+
+const ticketId = Astro.params.id;
+if (!ticketId) return new Response('Not found', { status: 404 });
+
+const [ticket] = await db.select()
+  .from(supportTickets)
+  .where(eq(supportTickets.id, ticketId));
+
+if (!ticket || ticket.clientId !== ctx.clientId) {
+  return new Response('Not found', { status: 404 });
+}
+
+const messages = await db.select({
+  id: supportMessages.id,
+  message: supportMessages.message,
+  createdAt: supportMessages.createdAt,
+  senderName: userTable.name
+})
+  .from(supportMessages)
+  .leftJoin(userTable, eq(supportMessages.senderId, userTable.id))
+  .where(
+    and(
+      eq(supportMessages.ticketId, ticket.id),
+      eq(supportMessages.visibility, 'public')
+    )
+  )
+  .orderBy(asc(supportMessages.createdAt));
+
+function getStatusProps(status: string) {
+  switch (status) {
+    case 'open': return { label: 'Open', variant: 'success' as const };
+    case 'in_progress': return { label: 'In Progress', variant: 'info' as const };
+    case 'waiting_for_client': return { label: 'Waiting for You', variant: 'warning' as const };
+    case 'resolved': return { label: 'Resolved', variant: 'neutral' as const };
+    case 'closed': return { label: 'Closed', variant: 'neutral' as const };
+    default: return { label: status, variant: 'neutral' as const };
+  }
+}
+---
+
+<PortalLayout title={`${ticket.ticketNumber} - ${ticket.subject}`} user={user}>
+  <div class="mb-6">
+    <div class="flex items-center text-sm text-slate-500 mb-2">
+      <a href="/portal/support" class="hover:text-blue-600 transition-colors">Support</a>
+      <span class="mx-2">/</span>
+      <span class="text-slate-900">{ticket.ticketNumber}</span>
+    </div>
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900">{ticket.subject}</h1>
+        <p class="mt-1 text-sm text-slate-500">
+          Created on {new Date(ticket.createdAt).toLocaleDateString()}
+        </p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 capitalize">
+          {ticket.category.replace('_', ' ')}
+        </span>
+        <StatusBadge {...getStatusProps(ticket.status)} />
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-6 max-w-4xl">
+    <!-- Original Description -->
+    <div class="bg-white shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase">
+            {user.name.charAt(0)}
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-slate-900">{user.name}</p>
+            <p class="text-xs text-slate-500">{new Date(ticket.createdAt).toLocaleString()}</p>
+          </div>
+        </div>
+        <div class="prose max-w-none text-slate-700 whitespace-pre-wrap text-sm">{ticket.description}</div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    {messages.map((msg) => (
+      <div class="bg-white shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold uppercase">
+              {msg.senderName ? msg.senderName.charAt(0) : '?'}
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-slate-900">{msg.senderName || 'Staff'}</p>
+              <p class="text-xs text-slate-500">{new Date(msg.createdAt).toLocaleString()}</p>
+            </div>
+          </div>
+          <div class="prose max-w-none text-slate-700 whitespace-pre-wrap text-sm">{msg.message}</div>
+        </div>
+      </div>
+    ))}
+
+    <!-- Reply Form -->
+    {ticket.status !== 'closed' && (
+      <div class="bg-slate-50 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden border border-slate-200 mt-8">
+        <form id="reply-form" class="p-6">
+          <h3 class="text-lg font-medium text-slate-900 mb-4">Add a Reply</h3>
+          <div class="mb-4">
+            <label for="message" class="sr-only">Message</label>
+            <textarea id="message" name="message" rows="4" required class="block w-full rounded-md border border-slate-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" placeholder="Type your reply here..."></textarea>
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" id="reply-btn" class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              Send Reply
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+  </div>
+
+  <script define:vars={{ ticketId: ticket.id }}>
+    document.getElementById('reply-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('reply-btn');
+      const messageInput = document.getElementById('message');
+      
+      const message = messageInput.value;
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        
+        const res = await fetch(`/api/portal/support/${ticketId}/reply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        if (!res.ok) {
+          const result = await res.json();
+          throw new Error(result.error || 'Failed to send reply');
+        }
+
+        window.location.reload();
+      } catch (err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Send Reply';
+      }
+    });
+  </script>
+</PortalLayout>

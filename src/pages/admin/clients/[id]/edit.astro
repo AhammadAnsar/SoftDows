@@ -1,0 +1,145 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../../lib/db';
+import { clients } from '../../../../lib/db/schema/crm';
+import { auditLogs } from '../../../../lib/db/schema/audit';
+import { eq } from 'drizzle-orm';
+import AdminIcon from '../../../../components/admin/AdminIcon.astro';
+import { requirePermission } from '../../../../lib/auth/authorization';
+import { env } from 'cloudflare:workers';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+requirePermission(user.role as any, 'clients', 'update');
+
+const db = getDb((env as any).DB);
+const { id } = Astro.params;
+
+if (!id) return Astro.redirect('/admin/clients');
+
+const clientResult = await db.select().from(clients).where(eq(clients.id, id)).limit(1);
+const client = clientResult[0];
+
+if (!client) return new Response('Client not found', { status: 404 });
+
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+    
+    const clientName = data.get('clientName')?.toString().trim() || '';
+    const status = data.get('status')?.toString().trim() || 'active';
+    const internalNotes = data.get('internalNotes')?.toString().trim() || '';
+
+    if (!clientName) errors.clientName = 'Client/Business name is required.';
+
+    if (Object.keys(errors).length === 0) {
+      const auditId = crypto.randomUUID();
+
+      const clientData: any = {
+        name: clientName,
+        status: status as any,
+        updatedAt: new Date()
+      };
+      if (internalNotes) clientData.notes = internalNotes;
+
+      await db.batch([
+        db.update(clients).set(clientData).where(eq(clients.id, client.id)),
+        
+        db.insert(auditLogs).values({
+          id: auditId,
+          action: 'client_updated',
+          entityType: 'client',
+          entityId: client.id,
+          actorId: user.id,
+          details: {
+            oldStatus: client.status,
+            newStatus: status,
+            action: 'client_info_updated'
+          }
+        })
+      ]);
+
+      return Astro.redirect(`/admin/clients/${client.id}`);
+    }
+  } catch (error: any) {
+    console.error('Error updating client:', error);
+    errors.system = 'An unexpected error occurred while saving the client.';
+  }
+}
+---
+
+<AdminLayout title={`Edit Client: ${client.name}`} user={user}>
+  <div class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+    
+    <div class="mb-8">
+      <a href={`/admin/clients/${client.id}`} class="inline-flex items-center text-sm font-medium text-[#64748b] hover:text-[#242a56] transition-colors mb-2">
+        <AdminIcon name="chevron-left" class="w-4 h-4 mr-1" />
+        Back to Client Detail
+      </a>
+      <h1 class="text-2xl font-bold text-[#242a56]">Edit Client Info</h1>
+    </div>
+
+    {errors.system && (
+      <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 font-medium text-sm">
+        {errors.system}
+      </div>
+    )}
+
+    <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+      <form method="POST" class="p-6 sm:p-8 space-y-6">
+        
+        <div>
+          <label for="clientName" class="block text-sm font-bold text-[#242a56] mb-1.5">Client / Business Name <span class="text-red-500">*</span></label>
+          <input 
+            type="text" 
+            id="clientName" 
+            name="clientName" 
+            value={client.name}
+            class:list={["w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 bg-white", errors.clientName ? "border-red-300 focus:ring-red-200" : "border-slate-300 focus:ring-[#6878d6]/20 focus:border-[#6878d6]"]}
+          />
+          {errors.clientName && <p class="mt-1 text-xs text-red-500">{errors.clientName}</p>}
+        </div>
+
+        <div>
+          <label for="status" class="block text-sm font-bold text-[#242a56] mb-1.5">Status</label>
+          <select 
+            id="status" 
+            name="status"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white appearance-none"
+          >
+            <option value="active" selected={client.status === 'active'}>Active</option>
+            <option value="inactive" selected={client.status === 'inactive'}>Inactive</option>
+            <option value="archived" selected={client.status === 'archived'}>Archived</option>
+          </select>
+          <p class="text-xs text-slate-500 mt-2">Note: Archiving a client hides them from active lists but preserves their history.</p>
+        </div>
+
+        <div>
+          <label for="internalNotes" class="block text-sm font-bold text-[#242a56] mb-1.5">Internal Notes</label>
+          <textarea 
+            id="internalNotes" 
+            name="internalNotes" 
+            rows="6"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6878d6]/20 focus:border-[#6878d6] bg-white resize-y"
+          >{client.notes || ''}</textarea>
+        </div>
+
+        <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
+          <a href={`/admin/clients/${client.id}`} class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium rounded-lg transition-colors">
+            Cancel
+          </a>
+          <button type="submit" class="px-5 py-2.5 bg-[#242a56] hover:bg-[#1a1e3e] text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#242a56]">
+            Save Changes
+          </button>
+        </div>
+
+      </form>
+    </div>
+    
+  </div>
+</AdminLayout>
+
+
