@@ -1,0 +1,33 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "softdows",
+    "compatibility_date": "2024-09-23",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "observability": {
+        "enabled": true
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "softdows-production",
+            "database_id": "67cb2d2e-dcd8-45dc-9f9b-83426f5341f8"
+        }
+    ],
+    "kv_namespaces": [
+        {
+            "binding": "SESSION",
+            "id": "9001da5361824a3b8abe24cadc2dc344"
+        }
+    ],
+    "vars": {
+        "BETTER_AUTH_URL": "https://softdows.com"
+    },
+    "r2_buckets": [
+        {
+            "binding": "MEDIA",
+            "bucket_name": "softdows-media"
+        }
+    ]
+}

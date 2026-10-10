@@ -1,0 +1,80 @@
+---
+export const prerender = true;
+import MainLayout from '../layouts/MainLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Button from '../components/ui/Button.astro';
+import Badge from '../components/ui/Badge.astro';
+import { contactContent } from '../lib/content/contact';
+
+const c = contactContent;
+---
+
+<MainLayout title={c.seo.title} description={c.seo.description}>
+  <Section variant="light" size="large" class="pt-24 pb-20 md:pt-40 md:pb-32 bg-slate-50 relative overflow-hidden">
+    <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[var(--color-brand-purple)]/5 via-transparent to-transparent pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+      <Badge variant="primary" class="mb-6">{c.hero.eyebrow}</Badge>
+      <h1 class="mb-8 text-5xl md:text-6xl lg:text-[4.5rem] text-[var(--color-brand-navy)] font-bold tracking-tight leading-[1.05]">
+        {c.hero.heading}
+      </h1>
+      <p class="text-xl sm:text-2xl text-[var(--color-text-muted)] leading-relaxed max-w-2xl mx-auto font-light">
+        {c.hero.description}
+      </p>
+    </div>
+  </Section>
+
+  <Section variant="default" size="normal" class="border-t border-slate-100">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+      
+      <!-- Direct Contact Methods -->
+      <div class="flex flex-col gap-6">
+        <Badge class="w-fit mb-4">{c.contactMethods.heading}</Badge>
+        <div class="space-y-6">
+          {c.contactMethods.items.map((method: any) => (
+            <a href={method.url} class="group block p-6 md:p-8 bg-white border border-slate-200 rounded-2xl hover:border-[var(--color-brand-purple)]/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-purple)]">
+              <div class="flex gap-6 items-start">
+                <div class="flex-shrink-0">
+                  <div class="h-14 w-14 rounded-full bg-slate-50 border border-slate-100 text-[var(--color-brand-purple)] flex items-center justify-center group-hover:bg-[var(--color-brand-purple)] group-hover:text-white transition-colors duration-300">
+                    {method.type === 'email' ? (
+                      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    ) : method.type === 'phone' ? (
+                      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                    ) : method.type === 'address' ? (
+                      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                    ) : (
+                      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold mb-1 text-[var(--color-brand-navy)] group-hover:text-[var(--color-brand-purple)] transition-colors">{method.label}</h3>
+                  <p class="text-lg text-slate-900 font-medium mb-2">{method.value}</p>
+                  <p class="text-[var(--color-text-muted)] leading-relaxed">
+                    {method.description}
+                  </p>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Project Alternative -->
+      <div class="bg-[var(--color-brand-navy)] p-10 md:p-14 rounded-3xl border border-transparent shadow-xl flex flex-col justify-center relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[var(--color-brand-purple)] opacity-20 rounded-full blur-[60px] pointer-events-none group-hover:bg-indigo-500 transition-colors duration-700"></div>
+        <div class="h-16 w-16 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-8 border border-white/20 relative z-10 backdrop-blur-sm">
+          <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        </div>
+        <h2 class="mb-6 text-3xl md:text-4xl font-bold text-white tracking-tight relative z-10">{c.projectAlternative.heading}</h2>
+        <p class="mb-10 text-xl text-[var(--color-brand-light)] font-light leading-relaxed opacity-90 relative z-10">
+          {c.projectAlternative.description}
+        </p>
+        <Button href={c.projectAlternative.cta.url} variant="inverse" size="large" class="w-fit shadow-xl shadow-white/5 relative z-10">{c.projectAlternative.cta.label}</Button>
+      </div>
+      
+    </div>
+  </Section>
+</MainLayout>
+
+
+

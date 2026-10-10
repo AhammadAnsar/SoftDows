@@ -1,0 +1,85 @@
+---
+export const prerender = false;
+import PortalLayout from '../../../layouts/PortalLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../lib/db';
+import { getAuthorizedClientContext } from '../../../lib/portal/auth';
+import { quotations } from '../../../lib/db/schema/billing';
+import { eq, desc } from 'drizzle-orm';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+const db = getDb((env as any).DB);
+const ctx = await getAuthorizedClientContext(db, user.id);
+if (!ctx.authorized || !ctx.clientId) return Astro.redirect('/admin/access-denied');
+const clientId = ctx.clientId;
+
+const userQuotations = await db.select()
+  .from(quotations)
+  .where(eq(quotations.clientId, clientId))
+  .orderBy(desc(quotations.issueDate));
+
+function getQuotationStatus(status: string): { label: string, variant: 'success' | 'warning' | 'neutral' | 'danger' | 'info' } {
+  switch(status) {
+    case 'draft': return { label: 'Draft', variant: 'neutral' };
+    case 'sent': return { label: 'Sent', variant: 'info' };
+    case 'accepted': return { label: 'Accepted', variant: 'success' };
+    case 'rejected': return { label: 'Rejected', variant: 'danger' };
+    case 'expired': return { label: 'Expired', variant: 'warning' };
+    case 'cancelled': return { label: 'Cancelled', variant: 'neutral' };
+    default: return { label: status, variant: 'neutral' };
+  }
+}
+---
+
+<PortalLayout title="Quotations" user={user}>
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-800">My Quotations</h1>
+    <p class="text-slate-600">View and manage your quotations.</p>
+  </div>
+
+  <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
+    <table class="w-full text-left text-sm whitespace-nowrap">
+      <thead class="bg-slate-50 border-b">
+        <tr>
+          <th class="p-4 font-medium text-slate-500">Number</th>
+          <th class="p-4 font-medium text-slate-500">Issue Date</th>
+          <th class="p-4 font-medium text-slate-500">Expiry Date</th>
+          <th class="p-4 font-medium text-slate-500">Total</th>
+          <th class="p-4 font-medium text-slate-500">Status</th>
+          <th class="p-4 font-medium text-slate-500"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        {userQuotations.map((q) => {
+          const s = getQuotationStatus(q.status);
+          return (
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-4 font-medium text-slate-900">{q.quotationNumber}</td>
+            <td class="p-4 text-slate-600">{new Date(q.issueDate).toLocaleDateString()}</td>
+            <td class="p-4 text-slate-600">{q.expiryDate ? new Date(q.expiryDate).toLocaleDateString() : '-'}</td>
+            <td class="p-4 text-slate-900 font-medium">
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency: q.currency }).format(q.total / 100)}
+            </td>
+            <td class="p-4">
+              <StatusBadge label={s.label} variant={s.variant} />
+            </td>
+            <td class="p-4 text-right">
+              <a href={`/portal/quotations/${q.id}`} class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                View Details &rarr;
+              </a>
+            </td>
+          </tr>
+        )})}
+        {userQuotations.length === 0 && (
+          <tr>
+            <td colspan="6" class="p-8 text-center text-slate-500">
+              No quotations found.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</PortalLayout>

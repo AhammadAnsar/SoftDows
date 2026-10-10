@@ -1,0 +1,95 @@
+---
+export const prerender = false;
+import PortalLayout from '../../../layouts/PortalLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../lib/db';
+import { getAuthorizedClientContext } from '../../../lib/portal/auth';
+import { supportTickets } from '../../../lib/db/schema/support';
+import { eq, desc } from 'drizzle-orm';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminEmptyState from '../../../components/admin/AdminEmptyState.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+const db = getDb((env as any).DB);
+const ctx = await getAuthorizedClientContext(db, user.id);
+if (!ctx.authorized) return Astro.redirect('/admin/access-denied');
+
+const tickets = await db.select()
+  .from(supportTickets)
+  .where(eq(supportTickets.clientId, ctx.clientId as string))
+  .orderBy(desc(supportTickets.createdAt));
+
+function getStatusProps(status: string) {
+  switch (status) {
+    case 'open': return { label: 'Open', variant: 'success' as const };
+    case 'in_progress': return { label: 'In Progress', variant: 'info' as const };
+    case 'waiting_for_client': return { label: 'Waiting for You', variant: 'warning' as const };
+    case 'resolved': return { label: 'Resolved', variant: 'neutral' as const };
+    case 'closed': return { label: 'Closed', variant: 'neutral' as const };
+    default: return { label: status, variant: 'neutral' as const };
+  }
+}
+---
+
+<PortalLayout title="Support Tickets" user={user}>
+  <div class="mb-6 flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Support Tickets</h1>
+      <p class="mt-1 text-sm text-slate-500">Manage and track your support requests.</p>
+    </div>
+    <a href="/portal/support/new" class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+      <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+      New Ticket
+    </a>
+  </div>
+
+  <div class="bg-white shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden">
+    {tickets.length > 0 ? (
+      <table class="min-w-full divide-y divide-slate-300">
+        <thead class="bg-slate-50">
+          <tr>
+            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">Ticket</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Subject</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Category</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Status</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Created</th>
+            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">View</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          {tickets.map((ticket: any) => (
+            <tr>
+              <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
+                {ticket.ticketNumber}
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                {ticket.subject}
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500 capitalize">
+                {ticket.category.replace('_', ' ')}
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                <StatusBadge {...getStatusProps(ticket.status)} />
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                {new Date(ticket.createdAt).toLocaleDateString()}
+              </td>
+              <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                <a href={`/portal/support/${ticket.id}`} class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, {ticket.ticketNumber}</span></a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ) : (
+      <AdminEmptyState
+        title="No support tickets"
+        description="You don't have any support tickets yet."
+        actionLabel="Create new ticket"
+        actionHref="/portal/support/new"
+      />
+    )}
+  </div>
+</PortalLayout>

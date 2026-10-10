@@ -1,0 +1,146 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Button from '../components/ui/Button.astro';
+import Card from '../components/ui/Card.astro';
+import Badge from '../components/ui/Badge.astro';
+---
+<MainLayout title="Design System | SoftDows">
+  <!-- Header -->
+  <header class="border-b border-[var(--color-border-subtle)] bg-white py-6 px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="text-xl font-bold text-brand-navy">Design System Preview</div>
+      <div class="text-sm text-text-muted">Development Only</div>
+    </div>
+  </header>
+
+  <!-- Typography & Colors -->
+  <Section variant="default" size="narrow">
+    <Badge class="mb-4">Visual Foundation</Badge>
+    <h1 class="mb-12">Typography & Colors</h1>
+    
+    <div class="space-y-8 mb-16">
+      <div>
+        <h1 class="mb-2">Heading 1 Example</h1>
+        <p class="text-text-muted">text-4xl md:text-5xl lg:text-6xl</p>
+      </div>
+      <hr class="border-[var(--color-border-subtle)]" />
+      <div>
+        <h2 class="mb-2">Heading 2 Example</h2>
+        <p class="text-text-muted">text-3xl md:text-4xl</p>
+      </div>
+      <hr class="border-[var(--color-border-subtle)]" />
+      <div>
+        <h3 class="mb-2">Heading 3 Example</h3>
+        <p class="text-text-muted">text-2xl md:text-3xl</p>
+      </div>
+      <hr class="border-[var(--color-border-subtle)]" />
+      <div>
+        <h4 class="mb-2">Heading 4 Example</h4>
+        <p class="text-text-muted">text-xl md:text-2xl</p>
+      </div>
+      <hr class="border-[var(--color-border-subtle)]" />
+      <div>
+        <p class="text-base text-text-main">
+          This is an example of standard body text. It uses a highly readable, privacy-conscious system font stack. 
+          The line height is relaxed, and the contrast is accessible for all readers. <a href="#" class="text-brand-purple hover:underline underline-offset-4 decoration-2">This is an inline link</a> demonstrating hover behavior.
+        </p>
+      </div>
+    </div>
+
+    <!-- Color Palette -->
+    <h3 class="mb-6">Brand Palette</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="rounded-md border border-[var(--color-border-subtle)] overflow-hidden">
+        <div class="h-24 bg-brand-navy"></div>
+        <div class="p-3 bg-white text-sm font-medium">Brand Navy</div>
+      </div>
+      <div class="rounded-md border border-[var(--color-border-subtle)] overflow-hidden">
+        <div class="h-24 bg-brand-purple"></div>
+        <div class="p-3 bg-white text-sm font-medium">Brand Purple</div>
+      </div>
+      <div class="rounded-md border border-[var(--color-border-subtle)] overflow-hidden">
+        <div class="h-24 bg-brand-light"></div>
+        <div class="p-3 bg-white text-sm font-medium">Brand Light</div>
+      </div>
+      <div class="rounded-md border border-[var(--color-border-subtle)] overflow-hidden">
+        <div class="h-24 bg-brand-white"></div>
+        <div class="p-3 bg-white text-sm font-medium">Brand White</div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- UI Components -->
+  <Section variant="alternate" size="normal">
+    <Badge class="mb-4">UI Components</Badge>
+    <h2 class="mb-12">Buttons & Cards</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <!-- Buttons -->
+      <div>
+        <h3 class="mb-6">Buttons</h3>
+        <div class="flex flex-col sm:flex-row flex-wrap gap-4">
+          <Button variant="primary">Primary Button</Button>
+          <Button variant="secondary">Secondary Button</Button>
+          <Button variant="ghost">Ghost Button</Button>
+        </div>
+        <div class="mt-6 flex flex-col sm:flex-row flex-wrap gap-4">
+          <Button variant="primary" disabled>Disabled State</Button>
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div>
+        <h3 class="mb-6">Card Example</h3>
+        <Card class="max-w-sm">
+          <div class="h-10 w-10 rounded bg-brand-light text-brand-purple flex items-center justify-center mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          </div>
+          <h4 class="mb-2">Service Component</h4>
+          <p class="text-text-muted mb-4 text-sm">Cards provide a subtle surface structure without heavy drop shadows or excessive rounding.</p>
+          <Button variant="ghost" class="!px-0 !min-w-0">Learn More &rarr;</Button>
+        </Card>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Forms -->
+  <Section variant="default" size="narrow">
+    <Badge class="mb-4">Forms</Badge>
+    <h2 class="mb-12">Input Fields</h2>
+
+    <form class="space-y-6" onsubmit="event.preventDefault();">
+      <!-- Normal Input -->
+      <div>
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" id="name" class="form-input" placeholder="e.g. John Doe" />
+      </div>
+
+      <!-- Input with Hint -->
+      <div>
+        <label for="budget" class="form-label">Project Budget</label>
+        <select id="budget" class="form-input">
+          <option>Select an option</option>
+          <option>$2,000 - $5,000</option>
+        </select>
+        <p class="form-hint">Used to help us recommend the best technical solution.</p>
+      </div>
+
+      <!-- Textarea -->
+      <div>
+        <label for="message" class="form-label">Project Description</label>
+        <textarea id="message" rows="4" class="form-input" placeholder="Briefly describe your goals..."></textarea>
+      </div>
+
+      <!-- Error State -->
+      <div>
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-input border-error focus:border-error focus:ring-error" value="invalid-email" />
+        <p class="form-error">Please enter a valid email address.</p>
+      </div>
+
+      <Button variant="primary" type="submit" class="w-full sm:w-auto">Submit Enquiry</Button>
+    </form>
+  </Section>
+</MainLayout>
+

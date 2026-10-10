@@ -1,0 +1,94 @@
+---
+export const prerender = false;
+import PortalLayout from '../../../layouts/PortalLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../lib/db';
+import { getAuthorizedClientContext } from '../../../lib/portal/auth';
+import { eq } from 'drizzle-orm';
+import { projects } from '../../../lib/db/schema/agency';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+
+const db = getDb((env as any).DB);
+const ctx = await getAuthorizedClientContext(db, user.id);
+if (!ctx.authorized || !ctx.clientId) {
+  return Astro.redirect('/admin/access-denied');
+}
+const clientId = ctx.clientId;
+
+const clientProjects = await db.select()
+  .from(projects)
+  .where(eq(projects.clientId, clientId))
+  .orderBy(projects.createdAt);
+
+function getProjectStatus(status: string): { label: string, variant: 'success' | 'warning' | 'neutral' | 'danger' | 'info' } {
+  switch (status) {
+    case 'planning': return { label: 'Planning', variant: 'neutral' };
+    case 'active': return { label: 'Active', variant: 'success' };
+    case 'on_hold': return { label: 'On Hold', variant: 'warning' };
+    case 'completed': return { label: 'Completed', variant: 'info' };
+    case 'cancelled': return { label: 'Cancelled', variant: 'danger' };
+    default: return { label: status, variant: 'neutral' };
+  }
+}
+---
+<PortalLayout title="My Projects" user={user} user={user}>
+  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-900">Projects</h1>
+        <p class="mt-2 text-sm text-gray-600">View and manage all your ongoing and past projects.</p>
+      </div>
+    </div>
+
+    {clientProjects.length > 0 ? (
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {clientProjects.map((project: any) => {
+          const s = getProjectStatus(project.status);
+          return (
+          <a href={`/portal/projects/${project.id}`} class="block group">
+            <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden hover:border-indigo-500 hover:shadow-md transition-all duration-200 h-full flex flex-col">
+              <div class="p-6 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                  <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                    <AdminIcon name="folder" class="w-5 h-5" />
+                  </div>
+                  <StatusBadge label={s.label} variant={s.variant} />
+                </div>
+                
+                <h3 class="text-lg font-medium text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
+                  {project.name}
+                </h3>
+                
+                {project.projectCode && (
+                  <p class="text-sm text-gray-500 mb-4">{project.projectCode}</p>
+                )}
+                
+                <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <AdminIcon name="activity" class="w-4 h-4" />
+                    {project.progressPercentage}% Complete
+                  </span>
+                  <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        )})}
+      </div>
+    ) : (
+      <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] py-16 px-6 text-center">
+        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AdminIcon name="folder" class="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-1">No projects found</h3>
+        <p class="text-gray-500 max-w-sm mx-auto">
+          You don't have any projects associated with your account yet.
+        </p>
+      </div>
+    )}
+  </div>
+</PortalLayout>

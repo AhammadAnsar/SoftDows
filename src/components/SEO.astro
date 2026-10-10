@@ -1,0 +1,20 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalURL?: URL | string;
+}
+
+const { 
+  title = "SoftDows | Digital Services Agency", 
+  description = "Professional digital services agency providing web development, custom software, and SEO.",
+  canonicalURL = new URL(Astro.url.pathname, Astro.site)
+} = Astro.props;
+---
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+<!-- Open Graph and JSON-LD structured data will be implemented in Phase 11 -->
+

@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Card from '../ui/Card.astro';
+import Badge from '../ui/Badge.astro';
+import ConceptualVisual from '../ui/ConceptualVisual.astro';
+
+interface Props {
+  project: CollectionEntry<'work'>;
+}
+
+const { project } = Astro.props;
+const { title, industry, projectSummary, featuredImage, imageAlt } = project.data;
+---
+
+<a href={`/work/${project.id}/`} class="group flex flex-col h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-[var(--color-brand-purple)] rounded-3xl">
+  <Card class="flex flex-col h-full p-0 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200 group-hover:border-[var(--color-brand-purple)]/30 rounded-3xl group-hover:-translate-y-2">
+    {featuredImage ? (
+      <div class="w-full aspect-[4/3] bg-[var(--color-surface-alt)] overflow-hidden">
+        <img 
+          src={typeof featuredImage === 'string' ? featuredImage : featuredImage.src} 
+          alt={imageAlt || `Screenshot of ${title} project`} 
+          class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+          loading="lazy"
+        />
+      </div>
+    ) : (
+      <ConceptualVisual concept="case-study" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+    )}
+    
+    <div class="p-8 md:p-10 flex flex-col flex-grow bg-white">
+      <div class="mb-6 flex justify-between items-center">
+        <Badge variant="secondary">{industry}</Badge>
+        <div class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-[var(--color-brand-navy)] group-hover:bg-[var(--color-brand-purple)] group-hover:text-white group-hover:border-[var(--color-brand-purple)] transition-all duration-300">
+          <svg class="w-4 h-4 transform -rotate-45 group-hover:rotate-0 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </div>
+      </div>
+      <h3 class="text-2xl md:text-3xl font-bold mb-4 text-[var(--color-brand-navy)] group-hover:text-[var(--color-brand-purple)] transition-colors tracking-tight">
+        {title}
+      </h3>
+      <p class="text-[var(--color-text-muted)] leading-relaxed text-lg mb-2 flex-grow">
+        {projectSummary}
+      </p>
+    </div>
+  </Card>
+</a>
+
+
+
+

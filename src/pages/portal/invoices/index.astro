@@ -1,0 +1,114 @@
+---
+export const prerender = false;
+import PortalLayout from '../../../layouts/PortalLayout.astro';
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../lib/db';
+import { getAuthorizedClientContext } from '../../../lib/portal/auth';
+import { invoices } from '../../../lib/db/schema/billing';
+import { eq, desc } from 'drizzle-orm';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect('/login');
+const db = getDb((env as any).DB);
+const ctx = await getAuthorizedClientContext(db, user.id);
+if (!ctx.authorized) return Astro.redirect('/admin/access-denied');
+
+const allInvoices = await db.select()
+  .from(invoices)
+  .where(eq(invoices.clientId, ctx.clientId as string))
+  .orderBy(desc(invoices.issueDate));
+
+function formatMoney(amount: number, currency: string) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+  }).format(amount / 100);
+}
+
+function getInvoiceStatusVariant(status: string) {
+  switch(status) {
+    case 'paid': return 'success';
+    case 'partially_paid': return 'info';
+    case 'issued': return 'warning';
+    case 'overdue': return 'danger';
+    case 'draft': return 'neutral';
+    case 'cancelled': return 'neutral';
+    default: return 'neutral';
+  }
+}
+
+function formatStatus(status: string) {
+  return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+---
+
+<PortalLayout title="Invoices" user={user}>
+  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-2xl font-semibold text-slate-900">Invoices</h1>
+        <p class="mt-2 text-sm text-slate-700">A list of all invoices for your account.</p>
+      </div>
+    </div>
+    
+    <div class="mt-8 flex flex-col">
+      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+          {allInvoices.length === 0 ? (
+            <div class="text-center bg-white border border-slate-200 rounded-lg p-12">
+              <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-slate-900">No invoices</h3>
+              <p class="mt-1 text-sm text-slate-500">You don't have any invoices yet.</p>
+            </div>
+          ) : (
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+              <table class="min-w-full divide-y divide-slate-300">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">Invoice Number</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Issue Date</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Due Date</th>
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-slate-900">Total</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">Status</th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span class="sr-only">View</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white">
+                  {allInvoices.map((invoice: any) => (
+                    <tr>
+                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
+                        {invoice.invoiceNumber}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                        {new Date(invoice.issueDate).toLocaleDateString()}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                        {new Date(invoice.dueDate).toLocaleDateString()}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-right text-slate-500">
+                        {formatMoney(invoice.total, invoice.currency)}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                        <StatusBadge variant={getInvoiceStatusVariant(invoice.status) as any} label={formatStatus(invoice.status)} />
+                      </td>
+                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                        <a href={`/portal/invoices/${invoice.id}`} class="text-blue-600 hover:text-blue-900">
+                          View<span class="sr-only">, {invoice.invoiceNumber}</span>
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</PortalLayout>

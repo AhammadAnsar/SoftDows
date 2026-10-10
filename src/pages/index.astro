@@ -1,0 +1,773 @@
+---
+export const prerender = true;
+import MainLayout from '../layouts/MainLayout.astro';
+import ConceptualVisual from '../components/ui/ConceptualVisual.astro';
+import { homeContent } from '../lib/content/home';
+import { getPublishedVentures } from '../lib/content/ventures';
+import { getPublishedProducts } from '../lib/content/products';
+import { getPublishedTeam } from '../lib/content/team';
+import { clientPartners } from '../lib/content/clients';
+
+const c: any = homeContent;
+
+const publishedVentures = getPublishedVentures();
+const allProducts = getPublishedProducts();
+const featuredProducts = allProducts.slice(0, 6);
+const featuredVentures = publishedVentures.filter(v => v.featured).slice(0, 4);
+const founder = getPublishedTeam().find(m => m.id === 'ansar-ahammad');
+
+const productVisuals: Record<string, { gradient: string; badge: string; svgPath: string }> = {
+  'biddalok': {
+    gradient: 'from-blue-500 to-indigo-600',
+    badge: 'EdTech ERP',
+    svgPath: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222'
+  },
+  'eduweb': {
+    gradient: 'from-cyan-500 to-blue-600',
+    badge: 'Portal Engine',
+    svgPath: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9'
+  },
+  'smarttutor': {
+    gradient: 'from-violet-500 to-purple-600',
+    badge: 'Adaptive LMS',
+    svgPath: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+  },
+  'mymosque': {
+    gradient: 'from-emerald-500 to-teal-600',
+    badge: 'Community Tech',
+    svgPath: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
+  },
+  'experthunter': {
+    gradient: 'from-amber-500 to-orange-600',
+    badge: 'Talent Discovery',
+    svgPath: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7'
+  },
+  'easywebdev': {
+    gradient: 'from-rose-500 to-pink-600',
+    badge: 'Dev Platform',
+    svgPath: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4'
+  }
+};
+---
+
+<MainLayout title={c.seo.title} description={c.seo.description}>
+  
+  <!-- ========================================================================= -->
+  <!-- 1. HERO: Visual-First, High-Impact Visual Console with Icon Indicators   -->
+  <!-- ========================================================================= -->
+  <section class="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 lg:pt-16 lg:pb-28 bg-[#FCFDFE] border-b border-slate-100">
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute -top-[15%] right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[#5568d3]/10 to-indigo-100/30 blur-3xl"></div>
+      <div class="absolute top-[30%] -left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-sky-100/30 to-transparent blur-3xl"></div>
+      <div class="absolute inset-0 bg-[linear-gradient(to_right,#00000004_1px,transparent_1px),linear-gradient(to_bottom,#00000004_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex items-center gap-2.5 text-xs font-semibold text-[#5568d3] mb-6">
+        <span class="flex h-2 w-2 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="tracking-wide uppercase">Software Engineering & Digital Platforms</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+        
+        <div class="lg:col-span-6 flex flex-col items-start text-left">
+          
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#192040] tracking-tight leading-[1.1] mb-5">
+            Architecting <br />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#192040] via-[#5568d3] to-[#4557c2]">
+              Digital Excellence
+            </span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-lg mb-8">
+            High-performance web apps, scalable software platforms, and modern eCommerce systems built with clean code and zero technical debt.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto mb-10">
+            <a 
+              href="/start-a-project/" 
+              class="inline-flex items-center justify-center px-6 py-3.5 bg-[#192040] hover:bg-[#242a56] text-white text-sm font-semibold rounded-xl shadow-lg shadow-[#192040]/15 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 gap-2.5"
+            >
+              <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Start a Project</span>
+            </a>
+            
+            <a 
+              href="#services" 
+              class="inline-flex items-center justify-center px-5 py-3.5 bg-white hover:bg-slate-50 text-slate-800 text-sm font-semibold rounded-xl border border-slate-200 shadow-sm transition-all duration-200 gap-2"
+            >
+              <span>Explore Services</span>
+              <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full pt-4 border-t border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-[#5568d3] shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800">100% IP</div>
+                <div class="text-[10px] text-slate-500">Ownership</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800">&lt;100ms</div>
+                <div class="text-[10px] text-slate-500">Edge Speed</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800">6 Platforms</div>
+                <div class="text-[10px] text-slate-500">Active Live</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800">24/7 SLA</div>
+                <div class="text-[10px] text-slate-500">Support</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="lg:col-span-6 relative">
+          <div class="relative rounded-2xl shadow-2xl overflow-hidden border border-slate-200/80 bg-white">
+            <ConceptualVisual concept="hero-system" class="w-full aspect-[4/3] min-h-[360px] sm:min-h-[420px]" />
+            
+            <div class="absolute z-30 bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200/80 shadow-lg flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-[#192040] text-white flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-[#192040]">Engineered by SoftDows</div>
+                  <div class="text-[11px] text-slate-500">Clean Architecture · Zero Technical Debt</div>
+                </div>
+              </div>
+              <a href="/services/" class="text-xs font-bold text-[#5568d3] hover:underline flex items-center gap-1">
+                Explore &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 2. THE THREE ECOSYSTEM PILLARS: Visual Triad                             -->
+  <!-- ========================================================================= -->
+  <section class="py-16 md:py-20 bg-white border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-[#192040]">The SoftDows Ecosystem</h2>
+        <p class="text-sm sm:text-base text-slate-600 mt-2">Three focused divisions powering complete digital transformation.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Pillar 1 -->
+        <a href="/services/" class="group p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-[#5568d3]/40 hover:bg-white hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-[#5568d3] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">01 · Services</div>
+            <h3 class="text-xl font-bold text-[#192040] mb-2 group-hover:text-[#5568d3] transition-colors">Client Engineering</h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Bespoke web applications, UI/UX systems, and tailored digital platforms engineered to order.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-[#5568d3]">
+            <span>8 Specialized Services</span>
+            <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+          </div>
+        </a>
+
+        <!-- Pillar 2 -->
+        <a href="/products/" class="group p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-[#5568d3]/40 hover:bg-white hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">02 · Products</div>
+            <h3 class="text-xl font-bold text-[#192040] mb-2 group-hover:text-[#5568d3] transition-colors">Software Platforms</h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Ready-to-deploy platforms for school workflows, community management, and developer tools.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-[#5568d3]">
+            <span>6 Turnkey Products</span>
+            <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+          </div>
+        </a>
+
+        <!-- Pillar 3 -->
+        <a href="/ventures/" class="group p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-[#5568d3]/40 hover:bg-white hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-violet-50 border border-violet-100 text-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              </div>
+              <div class="flex -space-x-1.5 overflow-hidden">
+                <img src="/images/ventures/banglanotice.png" alt="BanglaNotice" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/bidyashikhi.png" alt="BidyaShikhi" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/nicetrix.png" alt="NiceTrix" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+                <img src="/images/ventures/baharimart.png" alt="BahariMart" width="24" height="24" loading="eager" fetchpriority="high" class="inline-block h-6 w-6 rounded-full ring-2 ring-white object-contain bg-white" />
+              </div>
+            </div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">03 · Studio</div>
+            <h3 class="text-xl font-bold text-[#192040] mb-2 group-hover:text-[#5568d3] transition-colors">Venture Studio</h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Internal brands and regional educational portals reaching large scale organic audiences.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-[#5568d3]">
+            <span>4 Active Ventures</span>
+            <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+          </div>
+        </a>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. VISUAL CAPABILITY SHOWCASE                                            -->
+  <!-- ========================================================================= -->
+  <section id="services" class="py-16 md:py-24 bg-[#f8fafc] border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+        <div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[#192040]">Core Capabilities</h2>
+          <p class="text-slate-600 text-sm sm:text-base mt-1">Full-stack technical execution across modern web and software.</p>
+        </div>
+        <a href="/services/" class="text-xs sm:text-sm font-semibold text-[#5568d3] hover:underline flex items-center gap-1">
+          View all 8 services &rarr;
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- 1. Custom Software -->
+        <a href="/services/custom-software-web-applications/" class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+          <div class="h-44 w-full bg-slate-50 border-b border-slate-100 overflow-hidden relative">
+            <ConceptualVisual concept="custom-software" class="w-full h-full" />
+          </div>
+          <div class="p-5 flex flex-col flex-grow justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2 text-[#5568d3]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                <span class="text-[11px] font-bold uppercase tracking-wider">Web Apps</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#192040] group-hover:text-[#5568d3] transition-colors">Custom Software</h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Scalable web applications, portals & dashboards.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-[#5568d3] flex items-center justify-between">
+              <span>Explore</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 2. Website Design -->
+        <a href="/services/website-design-development/" class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+          <div class="h-44 w-full bg-slate-50 border-b border-slate-100 overflow-hidden relative">
+            <ConceptualVisual concept="website-design" class="w-full h-full" />
+          </div>
+          <div class="p-5 flex flex-col flex-grow justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2 text-[#5568d3]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span class="text-[11px] font-bold uppercase tracking-wider">Modern Web</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#192040] group-hover:text-[#5568d3] transition-colors">Website Design</h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Fast, responsive & high-converting brand sites.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-[#5568d3] flex items-center justify-between">
+              <span>Explore</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 3. eCommerce Development -->
+        <a href="/services/ecommerce-development/" class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+          <div class="h-44 w-full bg-slate-50 border-b border-slate-100 overflow-hidden relative">
+            <ConceptualVisual concept="ecommerce" class="w-full h-full" />
+          </div>
+          <div class="p-5 flex flex-col flex-grow justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2 text-[#5568d3]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <span class="text-[11px] font-bold uppercase tracking-wider">Commerce</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#192040] group-hover:text-[#5568d3] transition-colors">eCommerce Systems</h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Seamless checkout funnels & payment gateways.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-[#5568d3] flex items-center justify-between">
+              <span>Explore</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 4. Maintenance & Cloud -->
+        <a href="/services/website-maintenance-support/" class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+          <div class="h-44 w-full bg-slate-50 border-b border-slate-100 overflow-hidden relative">
+            <ConceptualVisual concept="maintenance" class="w-full h-full" />
+          </div>
+          <div class="p-5 flex flex-col flex-grow justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2 text-[#5568d3]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span class="text-[11px] font-bold uppercase tracking-wider">Support</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#192040] group-hover:text-[#5568d3] transition-colors">Cloud & Maintenance</h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">24/7 security monitoring, backups & SLAs.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-[#5568d3] flex items-center justify-between">
+              <span>Explore</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+      <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <a href="/services/ui-ux-design/" class="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 flex items-center gap-3 transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">UI/UX Design</div>
+            <div class="text-[10px] text-slate-500">Design Systems</div>
+          </div>
+        </a>
+
+        <a href="/services/seo-digital-visibility/" class="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 flex items-center gap-3 transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Technical SEO</div>
+            <div class="text-[10px] text-slate-500">Search Discovery</div>
+          </div>
+        </a>
+
+        <a href="/services/domain-registration-management/" class="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 flex items-center gap-3 transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Domains</div>
+            <div class="text-[10px] text-slate-500">DNS & Security</div>
+          </div>
+        </a>
+
+        <a href="/services/managed-web-hosting/" class="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 flex items-center gap-3 transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Edge Hosting</div>
+            <div class="text-[10px] text-slate-500">Fast Cloud Runtimes</div>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. PRODUCTION CLIENT DEPLOYMENTS: Verified Institutional Works           -->
+  <!-- ========================================================================= -->
+  <section class="py-16 md:py-22 bg-[#FAFBFD] border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-[#5568d3] mb-1">Production Client Deployments</div>
+          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#192040]">
+            Trusted by Educational Institutions & Businesses
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-2 max-w-xl leading-relaxed">
+            Live web portals, academic systems, and commercial platforms engineered, deployed, and supported by SoftDows.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200/80 shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Verified Live Deployments</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+        {clientPartners.map((client) => (
+          <a 
+            href={client.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="group p-3 sm:p-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 hover:border-[#5568d3]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
+          >
+            <div>
+              <div class="flex items-center justify-between gap-1.5 mb-2.5 sm:mb-4">
+                <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-slate-50 border border-slate-200/90 p-1 sm:p-2 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-[#5568d3]/30 transition-all shadow-xs">
+                  <img 
+                    src={client.logo} 
+                    alt={`${client.name} official favicon`} 
+                    class="w-full h-full object-contain rounded-sm sm:rounded-md"
+                    loading="lazy" 
+                  />
+                </div>
+                <span class="text-[9px] sm:text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded sm:rounded-md border border-slate-200/60 flex items-center gap-1 group-hover:text-[#5568d3] transition-colors truncate">
+                  <span class="truncate">{client.category}</span>
+                  <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </span>
+              </div>
+
+              <h3 class="text-xs sm:text-base font-bold text-[#192040] group-hover:text-[#5568d3] transition-colors mb-0.5 sm:mb-1 leading-snug line-clamp-2">
+                {client.name}
+              </h3>
+              
+              <div class="text-[10px] sm:text-xs font-medium text-slate-500 mb-2 sm:mb-3 line-clamp-1">
+                {client.banglaName}
+              </div>
+            </div>
+
+            <div class="pt-2 sm:pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] sm:text-xs font-mono text-slate-500">
+              <span class="truncate max-w-[80px] sm:max-w-none group-hover:text-slate-800 transition-colors">{client.domain}</span>
+              <span class="text-[#5568d3] font-sans font-semibold text-[10px] sm:text-[11px] group-hover:underline shrink-0">Visit &rarr;</span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. SOFTWARE PRODUCTS: Visual Platform Gallery                            -->
+  <!-- ========================================================================= -->
+  <section class="py-16 md:py-24 bg-[#0B0E23] text-white relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(85,104,211,0.18)_0%,transparent_60%)] pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-1">Pillar 02 // Proprietary Software</div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Software Platforms</h2>
+        </div>
+        <a href="/products/" class="text-xs sm:text-sm font-semibold text-indigo-300 hover:text-white flex items-center gap-1">
+          View all 6 platforms &rarr;
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        {featuredProducts.map((p) => {
+          const vis = productVisuals[p.slug] || {
+            gradient: 'from-indigo-500 to-purple-600',
+            badge: 'Platform',
+            svgPath: 'M13 10V3L4 14h7v7l9-11h-7z'
+          };
+          return (
+            <a 
+              href={`/products/${p.slug}/`} 
+              class="group bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-indigo-400/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10"
+            >
+              <div>
+                <div class="flex items-center justify-between gap-1.5 mb-3 sm:mb-4">
+                  <div class={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br ${vis.gradient} p-2 sm:p-2.5 flex items-center justify-center shrink-0 shadow-md shadow-black/20 group-hover:scale-105 transition-transform`}>
+                    <svg class="w-full h-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={vis.svgPath} />
+                    </svg>
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] font-semibold text-indigo-200 bg-indigo-950/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-indigo-400/20 truncate">
+                    {vis.badge}
+                  </span>
+                </div>
+                
+                <h3 class="text-xs sm:text-lg font-bold text-white mb-0.5 sm:mb-1 group-hover:text-indigo-300 transition-colors line-clamp-1">{p.name}</h3>
+                <div class="text-[10px] sm:text-xs text-indigo-400/90 font-medium mb-1.5 sm:mb-2 line-clamp-1">{p.tagline}</div>
+                <p class="text-[10px] sm:text-xs text-slate-300 line-clamp-2 leading-relaxed">{p.shortDescription}</p>
+              </div>
+              
+              <div class="mt-4 sm:mt-5 pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-semibold text-indigo-300">
+                <span>Explore Platform</span>
+                <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. VENTURES GALLERY: Visual Brand Emblems & Reach                        -->
+  <!-- ========================================================================= -->
+  <section class="py-16 md:py-20 bg-white border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-[#5568d3] mb-1">Pillar 03 // Studio Brands</div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#192040]">Ventures We Operate</h2>
+        </div>
+        <a href="/ventures/" class="text-xs sm:text-sm font-semibold text-[#5568d3] hover:underline flex items-center gap-1">
+          Explore all 5 ventures &rarr;
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        {featuredVentures.map((v) => (
+          <a href={`/ventures/${v.slug}/`} class="group p-3.5 sm:p-5 bg-slate-50 hover:bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 hover:border-[#5568d3]/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1.5 mb-3 sm:mb-4">
+                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white border border-slate-200 shadow-xs p-1.5 sm:p-2 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-[#5568d3]/30 transition-all duration-300">
+                  {v.logo ? (
+                    <img 
+                      src={v.logo} 
+                      alt={`${v.brandName} favicon`} 
+                      class="w-full h-full object-contain rounded-sm sm:rounded-md"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span class="font-extrabold text-sm sm:text-base text-[#192040]">{v.brandName.charAt(0)}</span>
+                  )}
+                </div>
+                <span class="text-[9px] sm:text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full border border-emerald-100 flex items-center gap-1 shrink-0">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Active
+                </span>
+              </div>
+              
+              <div class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 sm:mb-1">{v.category}</div>
+              <h3 class="text-xs sm:text-base font-bold text-[#192040] mb-0.5 group-hover:text-[#5568d3] transition-colors line-clamp-1">{v.brandName}</h3>
+              {v.localName && (
+                <div class="text-[10px] sm:text-[11px] font-medium text-slate-500 mb-1.5 sm:mb-2">{v.localName}</div>
+              )}
+              <p class="text-[10px] sm:text-xs text-slate-500 line-clamp-2 leading-relaxed">{v.shortDescription}</p>
+            </div>
+            
+            <div class="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-200/60 flex items-center justify-between text-[10px] sm:text-xs font-semibold text-[#5568d3]">
+              <span>Details</span>
+              <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 6. THE 4-STEP PROCESS: Visual Pathway with Icons                         -->
+  <!-- ========================================================================= -->
+  <section class="py-16 md:py-20 bg-[#f8fafc] border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-[#192040]">How We Execute</h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-2">Predictable four-step engineering lifecycle.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#5568d3] flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <div class="text-xs font-mono text-slate-400 mb-1">01 // DISCOVER</div>
+            <h3 class="text-base font-bold text-[#192040] mb-1">Architecture</h3>
+            <p class="text-xs text-slate-500">Tech requirements, schema & data flow mapping.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z"/></svg>
+            </div>
+            <div class="text-xs font-mono text-slate-400 mb-1">02 // DESIGN</div>
+            <h3 class="text-base font-bold text-[#192040] mb-1">UI/UX Systems</h3>
+            <p class="text-xs text-slate-500">Interactive Figma prototypes & tokens.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            </div>
+            <div class="text-xs font-mono text-slate-400 mb-1">03 // BUILD</div>
+            <h3 class="text-base font-bold text-[#192040] mb-1">Engineering</h3>
+            <p class="text-xs text-slate-500">Modular code, testing & edge integration.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="text-xs font-mono text-slate-400 mb-1">04 // LAUNCH</div>
+            <h3 class="text-base font-bold text-[#192040] mb-1">Live & Support</h3>
+            <p class="text-xs text-slate-500">Zero-downtime deploy & IP handover.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 7. ARCHITECTURAL LEADERSHIP: Calm Executive Card                          -->
+  <!-- ========================================================================= -->
+  {founder && (
+    <section class="py-16 md:py-24 bg-white border-b border-slate-100">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-[#FAFBFD] rounded-3xl p-8 sm:p-12 border border-slate-200/90 shadow-sm flex flex-col md:flex-row items-center gap-8 md:gap-10">
+          
+          <div class="relative shrink-0">
+            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white border-2 border-slate-200 overflow-hidden shadow-sm">
+              {founder.photo ? (
+                <img src={founder.photo} alt={founder.fullName} width="128" height="128" loading="lazy" class="w-full h-full object-cover" />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center font-bold text-3xl text-slate-400">
+                  {founder.fullName.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-xs flex items-center gap-1.5 whitespace-nowrap text-[10px] font-semibold text-emerald-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Principal Architect</span>
+            </div>
+          </div>
+
+          <div class="text-center md:text-left flex-1 space-y-3">
+            <div class="text-[11px] font-bold text-[#5568d3] uppercase tracking-wider">Leadership & Craftsmanship</div>
+            
+            <div>
+              <h3 class="text-2xl sm:text-3xl font-extrabold text-[#192040] tracking-tight">{founder.fullName}</h3>
+              <div class="text-xs sm:text-sm font-medium text-slate-500 mt-0.5">Founder & Lead Systems Architect, SoftDows</div>
+            </div>
+
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl font-normal">
+              "We engineer digital platforms you truly own—clean, battle-tested code built with direct architectural accountability and zero technical debt."
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-xs text-slate-700 font-medium">
+              <span class="bg-white px-3 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+                ✓ 100% Code & IP Ownership
+              </span>
+              <span class="bg-white px-3 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+                ✓ Zero Junior Delegation
+              </span>
+              <span class="bg-white px-3 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+                ✓ Long-Term SLA Support
+              </span>
+            </div>
+
+            <div class="pt-2">
+              <a 
+                href={`/team/${founder.slug}/`} 
+                class="inline-flex items-center text-xs font-semibold text-[#5568d3] hover:text-[#192040] hover:underline gap-1 transition-colors"
+              >
+                <span>Read Full Philosophy & Background</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  )}
+
+  <!-- ========================================================================= -->
+  <!-- 8. FINAL CONVERSION: Clean Visual Call to Action                         -->
+  <!-- ========================================================================= -->
+  <section class="py-16 md:py-20 bg-gradient-to-br from-[#192040] to-[#252f5a] text-white relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(85,104,211,0.2)_0%,transparent_70%)] pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+      <div class="w-12 h-12 rounded-2xl bg-white/10 text-emerald-400 mx-auto flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+        Ready to Build Something Great?
+      </h2>
+
+      <p class="text-sm sm:text-base text-slate-300 max-w-lg mx-auto leading-relaxed">
+        Let's discuss your project requirements and construct the right digital architecture.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <a 
+          href="/start-a-project/" 
+          class="px-7 py-3.5 bg-white hover:bg-slate-100 text-[#192040] text-sm font-bold rounded-xl shadow-lg transition-all"
+        >
+          Start a Project
+        </a>
+        <a 
+          href="/contact/" 
+          class="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-xl border border-white/20 transition-all"
+        >
+          Contact Team
+        </a>
+      </div>
+
+      <div class="flex items-center justify-center gap-6 text-[11px] text-slate-400 pt-4">
+        <span>✓ 100% Code Ownership</span>
+        <span>✓ Free Discovery</span>
+        <span>✓ Senior Architects</span>
+      </div>
+    </div>
+  </section>
+
+</MainLayout>
+
+
+
+
