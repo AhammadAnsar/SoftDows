@@ -29,8 +29,11 @@ export default defineConfig({
           '/work/', '/design-system/'
         ];
         return !placeholders.includes(url.pathname);
-      }
+      },
+      customPages: [
+        'https://softdows.com/clients/sherascrap',
+        'https://softdows.com/clients/aziara-high-school'
+      ]
     })
   ]
 });
-

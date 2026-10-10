@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" fill="none">
+  <rect width="1200" height="750" fill="#F8FAFC"/>
+  <!-- Decorative Grid -->
+  <path d="M0 100h1200M0 200h1200M0 300h1200M0 400h1200M0 500h1200M0 600h1200" stroke="#E2E8F0" stroke-width="1"/>
+  <path d="M100 0v750M200 0v750M300 0v750M400 0v750M500 0v750M600 0v750M700 0v750M800 0v750M900 0v750M1000 0v750M1100 0v750" stroke="#E2E8F0" stroke-width="1"/>
+  
+  <!-- Content Mock -->
+  <rect x="200" y="200" width="800" height="80" rx="12" fill="#E2E8F0"/>
+  <rect x="300" y="320" width="600" height="40" rx="8" fill="#CBD5E1"/>
+  <rect x="250" y="400" width="700" height="24" rx="6" fill="#F1F5F9"/>
+  <rect x="500" y="480" width="200" height="56" rx="28" fill="#5568D3"/>
+</svg>
